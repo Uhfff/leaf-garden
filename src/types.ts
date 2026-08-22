@@ -14,6 +14,11 @@ export interface PlantedTree {
   id: string;
   speciesId: string;
   plantedAt: number;
+  /** Total leaves spent on this tree: purchase price plus every upgrade bought since. */
+  invested: number;
+  waterLevel: number;
+  fertilizeLevel: number;
+  boostLevel: number;
 }
 
 export interface GameState {

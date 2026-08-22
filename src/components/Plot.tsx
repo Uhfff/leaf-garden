@@ -1,6 +1,6 @@
 import type { PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
-import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration } from '../game/economy';
+import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplier, UPGRADES } from '../game/economy';
 import { TreeSprite } from './TreeSprite';
 import { LeafParticles } from './LeafParticles';
 
@@ -25,8 +25,15 @@ export function Plot({ tree, now, selectMode, selected, onClickEmpty, onToggleSe
 
   const species = SPECIES_MAP[tree.speciesId];
   const ageSeconds = (now - tree.plantedAt) / 1000;
-  const rate = incomeRate(species, ageSeconds);
+  const rate = incomeRate(species, ageSeconds, treeMultiplier(tree));
   const stage = growthStage(ageSeconds);
+  const badges = (
+    [
+      ['water', tree.waterLevel],
+      ['fertilize', tree.fertilizeLevel],
+      ['boost', tree.boostLevel],
+    ] as const
+  ).filter(([, level]) => level > 0);
 
   return (
     <button
@@ -40,6 +47,16 @@ export function Plot({ tree, now, selectMode, selected, onClickEmpty, onToggleSe
       <div className="plot-info">
         <span className="plot-name">{species.name}</span>
         <span className="plot-rate">+{formatLeaves(rate)}/с</span>
+        {badges.length > 0 && !selectMode && (
+          <span className="plot-badges">
+            {badges.map(([type, level]) => (
+              <span key={type} className="plot-badge">
+                {UPGRADES[type].icon}
+                {level}
+              </span>
+            ))}
+          </span>
+        )}
       </div>
       {selectMode && <span className={`plot-checkbox ${selected ? 'checked' : ''}`}>{selected ? '✓' : ''}</span>}
     </button>

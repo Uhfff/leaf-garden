@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
-import { earningsBetween, incomeRate, nextCost } from './economy';
+import {
+  earningsBetween,
+  incomeRate,
+  levelField,
+  nextCost,
+  REFUND_RATE,
+  treeMultiplier,
+  upgradeCost,
+  type UpgradeType,
+} from './economy';
 
 const STORAGE_KEY = 'leaf-garden-save-v1';
 const SAVE_INTERVAL_MS = 5000;
@@ -22,6 +31,18 @@ function freshState(): GameState {
   };
 }
 
+/** Fills in fields that didn't exist in older saves, so old saves keep working. */
+function normalizeTree(tree: PlantedTree | null): PlantedTree | null {
+  if (!tree) return null;
+  return {
+    ...tree,
+    invested: tree.invested ?? SPECIES_MAP[tree.speciesId]?.cost ?? 0,
+    waterLevel: tree.waterLevel ?? 0,
+    fertilizeLevel: tree.fertilizeLevel ?? 0,
+    boostLevel: tree.boostLevel ?? 0,
+  };
+}
+
 function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: number): number {
   let total = 0;
   for (const tree of trees) {
@@ -30,7 +51,7 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
     if (!species) continue;
     const ageStart = (fromMs - tree.plantedAt) / 1000;
     const ageEnd = (toMs - tree.plantedAt) / 1000;
-    total += earningsBetween(species, ageStart, ageEnd);
+    total += earningsBetween(species, ageStart, ageEnd, treeMultiplier(tree));
   }
   return total;
 }
@@ -40,12 +61,14 @@ function loadSave(): { state: GameState; offlineEarnings: number } {
   if (!raw) return { state: freshState(), offlineEarnings: 0 };
   try {
     const parsed = JSON.parse(raw) as GameState;
+    const trees = parsed.trees.map(normalizeTree);
     const now = Date.now();
     const from = Math.max(parsed.lastTick, now - OFFLINE_CAP_MS);
-    const earnings = earnForTrees(parsed.trees, from, now);
+    const earnings = earnForTrees(trees, from, now);
     return {
       state: {
         ...parsed,
+        trees,
         leaves: parsed.leaves + earnings,
         totalEarned: parsed.totalEarned + earnings,
         lastTick: now,
@@ -82,7 +105,7 @@ export function useGarden() {
         if (!tree) return sum;
         const species = SPECIES_MAP[tree.speciesId];
         if (!species) return sum;
-        return sum + incomeRate(species, (now - tree.plantedAt) / 1000);
+        return sum + incomeRate(species, (now - tree.plantedAt) / 1000, treeMultiplier(tree));
       }, 0);
       setIncomePerSec(rate);
     };
@@ -119,7 +142,15 @@ export function useGarden() {
       const cost = nextCost(species.cost, owned);
       if (prev.leaves < cost) return prev;
       const trees = [...prev.trees];
-      trees[plotIndex] = { id: crypto.randomUUID(), speciesId, plantedAt: Date.now() };
+      trees[plotIndex] = {
+        id: crypto.randomUUID(),
+        speciesId,
+        plantedAt: Date.now(),
+        invested: cost,
+        waterLevel: 0,
+        fertilizeLevel: 0,
+        boostLevel: 0,
+      };
       return { ...prev, leaves: prev.leaves - cost, trees };
     });
   }, []);
@@ -133,14 +164,75 @@ export function useGarden() {
     });
   }, []);
 
-  const removeTrees = useCallback((plotIndices: number[]) => {
+  /** Returns the amount refunded, so the caller can show it in a toast. */
+  const removeTrees = useCallback((plotIndices: number[]): number => {
+    const current = gameRef.current;
+    const refund = plotIndices.reduce((sum, i) => {
+      const tree = current.trees[i];
+      return tree ? sum + Math.round(tree.invested * REFUND_RATE) : sum;
+    }, 0);
+    if (plotIndices.length === 0) return 0;
     setGame((prev) => {
-      if (plotIndices.length === 0) return prev;
       const trees = [...prev.trees];
       for (const index of plotIndices) trees[index] = null;
-      return { ...prev, trees };
+      return { ...prev, trees, leaves: prev.leaves + refund };
     });
+    return refund;
   }, []);
 
-  return { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTrees };
+  /** Applies one upgrade level to every selected tree, atomically (all or nothing). */
+  const applyUpgrade = useCallback((type: UpgradeType, plotIndices: number[]): boolean => {
+    const current = gameRef.current;
+    const field = levelField(type);
+    const targets = plotIndices.filter((i) => current.trees[i]);
+    if (targets.length === 0) return false;
+    const costs = targets.map((i) => {
+      const tree = current.trees[i]!;
+      const species = SPECIES_MAP[tree.speciesId];
+      return upgradeCost(type, species, tree[field]);
+    });
+    const total = costs.reduce((a, b) => a + b, 0);
+    if (current.leaves < total) return false;
+    setGame((prev) => {
+      const trees = [...prev.trees];
+      targets.forEach((i, idx) => {
+        const tree = trees[i];
+        if (!tree) return;
+        trees[i] = { ...tree, [field]: tree[field] + 1, invested: tree.invested + costs[idx] };
+      });
+      return { ...prev, leaves: prev.leaves - total, trees };
+    });
+    return true;
+  }, []);
+
+  const upgradeCostFor = useCallback((type: UpgradeType, plotIndices: number[]): number => {
+    const current = gameRef.current;
+    const field = levelField(type);
+    return plotIndices.reduce((sum, i) => {
+      const tree = current.trees[i];
+      if (!tree) return sum;
+      const species = SPECIES_MAP[tree.speciesId];
+      return sum + upgradeCost(type, species, tree[field]);
+    }, 0);
+  }, []);
+
+  const refundFor = useCallback((plotIndices: number[]): number => {
+    const current = gameRef.current;
+    return plotIndices.reduce((sum, i) => {
+      const tree = current.trees[i];
+      return tree ? sum + Math.round(tree.invested * REFUND_RATE) : sum;
+    }, 0);
+  }, []);
+
+  return {
+    game,
+    incomePerSec,
+    offlineEarnings,
+    plantTree,
+    buyPlot,
+    removeTrees,
+    applyUpgrade,
+    upgradeCostFor,
+    refundFor,
+  };
 }

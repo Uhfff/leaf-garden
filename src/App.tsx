@@ -4,17 +4,18 @@ import { useNow } from './hooks/useNow';
 import { HUD } from './components/HUD';
 import { Garden } from './components/Garden';
 import { PlantModal } from './components/PlantModal';
-import { DeleteToolbar } from './components/DeleteToolbar';
-import { formatLeaves } from './game/economy';
+import { SelectionToolbar, type ActionType } from './components/SelectionToolbar';
+import { formatLeaves, UPGRADES, type UpgradeType } from './game/economy';
 import './App.css';
 
 export default function App() {
-  const { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTrees } = useGarden();
+  const { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTrees, applyUpgrade, upgradeCostFor, refundFor } =
+    useGarden();
   const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
-  const [selectMode, setSelectMode] = useState(false);
+  const [action, setAction] = useState<ActionType | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [confirming, setConfirming] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [toast, setToast] = useState<string | null>(
     offlineEarnings > 1 ? `Пока вас не было, сад принёс ${formatLeaves(offlineEarnings)} 🍃` : null,
   );
@@ -25,9 +26,9 @@ export default function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setConfirming(false);
+  const exitSelection = () => {
+    setAction(null);
+    setConfirmingDelete(false);
     setSelected(new Set());
   };
 
@@ -41,23 +42,39 @@ export default function App() {
   };
 
   const confirmDelete = () => {
-    removeTrees([...selected]);
-    exitSelectMode();
+    const refund = removeTrees([...selected]);
+    setToast(`Срублено, возвращено ${formatLeaves(refund)} 🍃`);
+    exitSelection();
   };
+
+  const confirmUpgrade = () => {
+    if (action === 'delete' || !action) return;
+    const applied = applyUpgrade(action as UpgradeType, [...selected]);
+    if (applied) setToast(`Применено: ${UPGRADES[action].label.toLowerCase()}`);
+    exitSelection();
+  };
+
+  const selectedIndices = [...selected];
+  const cost = action && action !== 'delete' ? upgradeCostFor(action, selectedIndices) : 0;
+  const refund = action === 'delete' ? refundFor(selectedIndices) : 0;
 
   return (
     <div className="app">
       <HUD leaves={game.leaves} incomePerSec={incomePerSec} />
       <main className="main">
         <div className="toolbar">
-          <DeleteToolbar
-            selectMode={selectMode}
-            confirming={confirming}
+          <SelectionToolbar
+            action={action}
+            confirmingDelete={confirmingDelete}
             selectedCount={selected.size}
-            onStart={() => setSelectMode(true)}
-            onRequestConfirm={() => setConfirming(true)}
-            onConfirm={confirmDelete}
-            onCancel={exitSelectMode}
+            cost={cost}
+            refund={refund}
+            leaves={game.leaves}
+            onStart={setAction}
+            onApplyUpgrade={confirmUpgrade}
+            onRequestDeleteConfirm={() => setConfirmingDelete(true)}
+            onConfirmDelete={confirmDelete}
+            onCancel={exitSelection}
           />
         </div>
         <Garden
@@ -67,7 +84,7 @@ export default function App() {
           maxPlots={MAX_PLOTS}
           expandCost={plotCost(game.plots)}
           leaves={game.leaves}
-          selectMode={selectMode}
+          selectMode={action !== null}
           selected={selected}
           onClickEmpty={setOpenPlot}
           onExpand={buyPlot}

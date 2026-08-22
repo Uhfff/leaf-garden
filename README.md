@@ -18,6 +18,12 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   tab was closed is computed with a closed-form integral on reload — no
   tick-by-tick simulation, no drift, no reward for leaving multiple tabs open.
 - **Garden plots.** Start with 6, expand up to 15 by spending leaves.
+- **Upgrades.** Every tree can be watered, fertilized, and boosted — each is
+  a separate, stackable, permanent multiplier on that tree's income, priced
+  on its own escalating cost curve. Select several trees at once (same
+  selection UI as removal) to upgrade them all in one purchase.
+- **Removing a tree refunds half of what you put into it** — purchase price
+  plus every upgrade bought since — so experimenting isn't a dead loss.
 - **Local-only.** Progress is saved to `localStorage`. No backend, no
   accounts.
 
@@ -36,6 +42,7 @@ src/
                          integral, cost scaling, number/duration formatting
   game/useGarden.ts     Game state, save/load + offline catch-up, tick loop
   components/           TreeSprite (SVG), Plot, Garden, Shop modal, HUD,
+                         SelectionToolbar (multi-select upgrade/delete),
                          LeafParticles (ambient falling-leaf effect)
 ```
 

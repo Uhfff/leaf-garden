@@ -79,7 +79,12 @@
   justify-content: flex-end;
 }
 
-.toolbar-trash {
+.toolbar-icons {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar-icon-btn {
   border: none;
   background: rgba(255, 255, 255, 0.6);
   border-radius: 12px;
@@ -91,7 +96,7 @@
   transition: background 0.15s, transform 0.15s;
 }
 
-.toolbar-trash:hover {
+.toolbar-icon-btn:hover {
   background: #fff;
   transform: translateY(-1px);
 }
@@ -144,6 +149,11 @@
 .toolbar-secondary {
   background: #e8eee3;
   color: #2f4a2a;
+}
+
+.toolbar-primary {
+  background: #3d7a3d;
+  color: #fff;
 }
 
 .garden-grid {
@@ -294,6 +304,19 @@
 .plot-rate {
   font-size: 11px;
   color: #3d6e2f;
+}
+
+.plot-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.plot-badge {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  padding: 1px 4px;
 }
 
 .leaf-particles {
