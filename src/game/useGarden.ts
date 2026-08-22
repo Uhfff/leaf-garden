@@ -133,5 +133,14 @@ export function useGarden() {
     });
   }, []);
 
-  return { game, incomePerSec, offlineEarnings, plantTree, buyPlot };
+  const removeTree = useCallback((plotIndex: number) => {
+    setGame((prev) => {
+      if (!prev.trees[plotIndex]) return prev;
+      const trees = [...prev.trees];
+      trees[plotIndex] = null;
+      return { ...prev, trees };
+    });
+  }, []);
+
+  return { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTree };
 }

@@ -8,7 +8,7 @@ import { formatLeaves } from './game/economy';
 import './App.css';
 
 export default function App() {
-  const { game, incomePerSec, offlineEarnings, plantTree, buyPlot } = useGarden();
+  const { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTree } = useGarden();
   const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(
@@ -34,6 +34,7 @@ export default function App() {
           leaves={game.leaves}
           onClickEmpty={setOpenPlot}
           onExpand={buyPlot}
+          onRemove={removeTree}
         />
       </main>
       {openPlot !== null && (

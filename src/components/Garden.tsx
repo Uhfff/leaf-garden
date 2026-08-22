@@ -11,13 +11,20 @@ interface Props {
   leaves: number;
   onClickEmpty: (index: number) => void;
   onExpand: () => void;
+  onRemove: (index: number) => void;
 }
 
-export function Garden({ trees, now, plots, maxPlots, expandCost, leaves, onClickEmpty, onExpand }: Props) {
+export function Garden({ trees, now, plots, maxPlots, expandCost, leaves, onClickEmpty, onExpand, onRemove }: Props) {
   return (
     <div className="garden-grid">
       {trees.map((tree, i) => (
-        <Plot key={i} tree={tree} now={now} onClickEmpty={() => onClickEmpty(i)} />
+        <Plot
+          key={tree ? tree.id : `empty-${i}`}
+          tree={tree}
+          now={now}
+          onClickEmpty={() => onClickEmpty(i)}
+          onRemove={() => onRemove(i)}
+        />
       ))}
       {plots < maxPlots && (
         <button className="plot plot-expand" disabled={leaves < expandCost} onClick={onExpand}>
