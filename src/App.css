@@ -230,6 +230,11 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
+.plot-ineligible {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .plot-selected {
   box-shadow: 0 0 0 3px #c0483f inset;
   background: radial-gradient(ellipse at 50% 100%, rgba(255, 220, 210, 0.7), rgba(255, 220, 210, 0.25));

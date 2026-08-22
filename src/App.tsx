@@ -84,7 +84,7 @@ export default function App() {
           maxPlots={MAX_PLOTS}
           expandCost={plotCost(game.plots)}
           leaves={game.leaves}
-          selectMode={action !== null}
+          action={action}
           selected={selected}
           onClickEmpty={setOpenPlot}
           onExpand={buyPlot}

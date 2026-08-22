@@ -7,11 +7,9 @@ export function incomeRate(species: TreeSpecies, ageSeconds: number, multiplier 
 }
 
 /**
- * Closed-form integral of incomeRate over [ageStart, ageEnd], so both the
- * live tick loop and offline catch-up can use the same exact calculation
- * instead of approximating with many small steps. `multiplier` is assumed
- * constant across the interval, which holds because it can only change
- * through a user action, and the user can't act while the game is closed.
+ * Closed-form integral of incomeRate over [ageStart, ageEnd] for a constant
+ * multiplier, so both the live tick loop and offline catch-up can use exact
+ * math instead of approximating with many small steps.
  */
 export function earningsBetween(species: TreeSpecies, ageStart: number, ageEnd: number, multiplier = 1): number {
   const a = Math.max(ageStart, 0);
@@ -38,37 +36,84 @@ export function nextCost(baseCost: number, owned: number, scale = 1.15): number 
 }
 
 export type UpgradeType = 'water' | 'fertilize' | 'boost';
-export type UpgradeLevelField = 'waterLevel' | 'fertilizeLevel' | 'boostLevel';
 
 interface UpgradeDef {
   label: string;
   icon: string;
-  costFactor: number;
-  scale: number;
-  bonusPerLevel: number;
+  bonus: number;
+  /** Present only for temporary, single-instance buffs (water, fertilize). */
+  durationMs?: number;
+  cost: (species: TreeSpecies, boostLevel: number) => number;
 }
 
 export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
-  water: { label: 'Полить', icon: '💧', costFactor: 0.5, scale: 1.3, bonusPerLevel: 0.1 },
-  fertilize: { label: 'Удобрить', icon: '🌿', costFactor: 1.5, scale: 1.4, bonusPerLevel: 0.2 },
-  boost: { label: 'Улучшить', icon: '⭐', costFactor: 4, scale: 1.6, bonusPerLevel: 0.35 },
+  water: {
+    label: 'Полить',
+    icon: '💧',
+    bonus: 0.2,
+    durationMs: 3 * 60 * 1000,
+    cost: (species) => Math.max(1, Math.round(species.cost * 0.5)),
+  },
+  fertilize: {
+    label: 'Удобрить',
+    icon: '🌿',
+    bonus: 0.4,
+    durationMs: 8 * 60 * 1000,
+    cost: (species) => Math.max(1, Math.round(species.cost * 1.5)),
+  },
+  boost: {
+    label: 'Улучшить',
+    icon: '⭐',
+    bonus: 0.35,
+    cost: (species, boostLevel) => Math.max(1, Math.round(species.cost * 4 * Math.pow(1.6, boostLevel))),
+  },
 };
 
-export function levelField(type: UpgradeType): UpgradeLevelField {
-  return `${type}Level` as UpgradeLevelField;
+/** Whether a tree can receive this upgrade right now — boost always can; a
+ *  buff can only be (re)applied once its previous application has expired. */
+export function isUpgradeEligible(tree: PlantedTree, type: UpgradeType, nowMs: number): boolean {
+  if (type === 'water') return !tree.waterUntil || tree.waterUntil <= nowMs;
+  if (type === 'fertilize') return !tree.fertilizeUntil || tree.fertilizeUntil <= nowMs;
+  return true;
 }
 
-export function upgradeCost(type: UpgradeType, species: TreeSpecies, currentLevel: number): number {
-  const def = UPGRADES[type];
-  return Math.max(1, Math.round(species.cost * def.costFactor * Math.pow(def.scale, currentLevel)));
+export function upgradeCost(type: UpgradeType, species: TreeSpecies, boostLevel: number): number {
+  return UPGRADES[type].cost(species, boostLevel);
 }
 
-export function treeMultiplier(tree: Pick<PlantedTree, 'waterLevel' | 'fertilizeLevel' | 'boostLevel'>): number {
+/** Income multiplier for a tree at a specific point in time. */
+export function treeMultiplierAt(tree: PlantedTree, atMs: number): number {
+  const waterActive = !!tree.waterUntil && atMs < tree.waterUntil;
+  const fertilizeActive = !!tree.fertilizeUntil && atMs < tree.fertilizeUntil;
   return (
-    (1 + UPGRADES.water.bonusPerLevel * tree.waterLevel) *
-    (1 + UPGRADES.fertilize.bonusPerLevel * tree.fertilizeLevel) *
-    (1 + UPGRADES.boost.bonusPerLevel * tree.boostLevel)
+    (waterActive ? 1 + UPGRADES.water.bonus : 1) *
+    (fertilizeActive ? 1 + UPGRADES.fertilize.bonus : 1) *
+    (1 + UPGRADES.boost.bonus * tree.boostLevel)
   );
+}
+
+/**
+ * Earnings for one tree over [fromMs, toMs]. Water/fertilize can expire
+ * mid-interval (including while the tab was closed), so the interval is
+ * split at any buff-expiry timestamps it contains and each constant-
+ * multiplier segment is integrated exactly with earningsBetween.
+ */
+export function earningsForTree(species: TreeSpecies, tree: PlantedTree, fromMs: number, toMs: number): number {
+  if (toMs <= fromMs) return 0;
+  const breakpoints = [tree.waterUntil, tree.fertilizeUntil]
+    .filter((t): t is number => !!t && t > fromMs && t < toMs)
+    .sort((a, b) => a - b);
+  const points = [fromMs, ...breakpoints, toMs];
+  let total = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    const segStart = points[i];
+    const segEnd = points[i + 1];
+    const multiplier = treeMultiplierAt(tree, segStart);
+    const ageStart = (segStart - tree.plantedAt) / 1000;
+    const ageEnd = (segEnd - tree.plantedAt) / 1000;
+    total += earningsBetween(species, ageStart, ageEnd, multiplier);
+  }
+  return total;
 }
 
 export const REFUND_RATE = 0.5;

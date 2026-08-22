@@ -16,8 +16,9 @@ export interface PlantedTree {
   plantedAt: number;
   /** Total leaves spent on this tree: purchase price plus every upgrade bought since. */
   invested: number;
-  waterLevel: number;
-  fertilizeLevel: number;
+  /** Epoch ms when the water/fertilize buff expires; 0 or absent = inactive. */
+  waterUntil: number;
+  fertilizeUntil: number;
   boostLevel: number;
 }
 

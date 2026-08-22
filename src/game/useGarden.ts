@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
 import {
-  earningsBetween,
+  earningsForTree,
   incomeRate,
-  levelField,
+  isUpgradeEligible,
   nextCost,
   REFUND_RATE,
-  treeMultiplier,
+  treeMultiplierAt,
   upgradeCost,
+  UPGRADES,
   type UpgradeType,
 } from './economy';
 
@@ -37,8 +38,8 @@ function normalizeTree(tree: PlantedTree | null): PlantedTree | null {
   return {
     ...tree,
     invested: tree.invested ?? SPECIES_MAP[tree.speciesId]?.cost ?? 0,
-    waterLevel: tree.waterLevel ?? 0,
-    fertilizeLevel: tree.fertilizeLevel ?? 0,
+    waterUntil: tree.waterUntil ?? 0,
+    fertilizeUntil: tree.fertilizeUntil ?? 0,
     boostLevel: tree.boostLevel ?? 0,
   };
 }
@@ -49,9 +50,7 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
     if (!tree) continue;
     const species = SPECIES_MAP[tree.speciesId];
     if (!species) continue;
-    const ageStart = (fromMs - tree.plantedAt) / 1000;
-    const ageEnd = (toMs - tree.plantedAt) / 1000;
-    total += earningsBetween(species, ageStart, ageEnd, treeMultiplier(tree));
+    total += earningsForTree(species, tree, fromMs, toMs);
   }
   return total;
 }
@@ -105,7 +104,7 @@ export function useGarden() {
         if (!tree) return sum;
         const species = SPECIES_MAP[tree.speciesId];
         if (!species) return sum;
-        return sum + incomeRate(species, (now - tree.plantedAt) / 1000, treeMultiplier(tree));
+        return sum + incomeRate(species, (now - tree.plantedAt) / 1000, treeMultiplierAt(tree, now));
       }, 0);
       setIncomePerSec(rate);
     };
@@ -147,8 +146,8 @@ export function useGarden() {
         speciesId,
         plantedAt: Date.now(),
         invested: cost,
-        waterLevel: 0,
-        fertilizeLevel: 0,
+        waterUntil: 0,
+        fertilizeUntil: 0,
         boostLevel: 0,
       };
       return { ...prev, leaves: prev.leaves - cost, trees };
@@ -180,16 +179,19 @@ export function useGarden() {
     return refund;
   }, []);
 
-  /** Applies one upgrade level to every selected tree, atomically (all or nothing). */
+  /** Applies one upgrade to every eligible selected tree, atomically (all or nothing). */
   const applyUpgrade = useCallback((type: UpgradeType, plotIndices: number[]): boolean => {
     const current = gameRef.current;
-    const field = levelField(type);
-    const targets = plotIndices.filter((i) => current.trees[i]);
+    const now = Date.now();
+    const targets = plotIndices.filter((i) => {
+      const tree = current.trees[i];
+      return !!tree && isUpgradeEligible(tree, type, now);
+    });
     if (targets.length === 0) return false;
     const costs = targets.map((i) => {
       const tree = current.trees[i]!;
       const species = SPECIES_MAP[tree.speciesId];
-      return upgradeCost(type, species, tree[field]);
+      return upgradeCost(type, species, tree.boostLevel);
     });
     const total = costs.reduce((a, b) => a + b, 0);
     if (current.leaves < total) return false;
@@ -198,7 +200,14 @@ export function useGarden() {
       targets.forEach((i, idx) => {
         const tree = trees[i];
         if (!tree) return;
-        trees[i] = { ...tree, [field]: tree[field] + 1, invested: tree.invested + costs[idx] };
+        const invested = tree.invested + costs[idx];
+        if (type === 'boost') {
+          trees[i] = { ...tree, boostLevel: tree.boostLevel + 1, invested };
+        } else if (type === 'water') {
+          trees[i] = { ...tree, waterUntil: now + UPGRADES.water.durationMs!, invested };
+        } else {
+          trees[i] = { ...tree, fertilizeUntil: now + UPGRADES.fertilize.durationMs!, invested };
+        }
       });
       return { ...prev, leaves: prev.leaves - total, trees };
     });
@@ -207,12 +216,12 @@ export function useGarden() {
 
   const upgradeCostFor = useCallback((type: UpgradeType, plotIndices: number[]): number => {
     const current = gameRef.current;
-    const field = levelField(type);
+    const now = Date.now();
     return plotIndices.reduce((sum, i) => {
       const tree = current.trees[i];
-      if (!tree) return sum;
+      if (!tree || !isUpgradeEligible(tree, type, now)) return sum;
       const species = SPECIES_MAP[tree.speciesId];
-      return sum + upgradeCost(type, species, tree[field]);
+      return sum + upgradeCost(type, species, tree.boostLevel);
     }, 0);
   }, []);
 

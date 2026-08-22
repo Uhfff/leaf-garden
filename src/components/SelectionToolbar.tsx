@@ -1,4 +1,4 @@
-import { UPGRADES, formatLeaves, pluralTrees, type UpgradeType } from '../game/economy';
+import { UPGRADES, formatDuration, formatLeaves, pluralTrees, type UpgradeType } from '../game/economy';
 
 export type ActionType = UpgradeType | 'delete';
 
@@ -74,10 +74,14 @@ export function SelectionToolbar({
 
   const def = UPGRADES[action];
   const canAfford = selectedCount > 0 && leaves >= cost;
+  const durationHint = def.durationMs
+    ? ` на ${formatDuration(def.durationMs / 1000)} (уже политые/удобренные деревья недоступны для выбора)`
+    : ' навсегда';
   return (
     <div className="toolbar-bar">
       <span>
-        {def.icon} {def.label.toLowerCase()} · выбрано {selectedCount} · стоимость {formatLeaves(cost)} 🍃
+        {def.icon} {def.label.toLowerCase()}{durationHint} · выбрано {selectedCount} · стоимость {formatLeaves(cost)}{' '}
+        🍃
       </span>
       <div className="toolbar-buttons">
         <button className="toolbar-primary" disabled={!canAfford} onClick={onApplyUpgrade}>
