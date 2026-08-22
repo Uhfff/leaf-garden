@@ -9,12 +9,26 @@ interface Props {
   maxPlots: number;
   expandCost: number;
   leaves: number;
+  selectMode: boolean;
+  selected: Set<number>;
   onClickEmpty: (index: number) => void;
   onExpand: () => void;
-  onRemove: (index: number) => void;
+  onToggleSelect: (index: number) => void;
 }
 
-export function Garden({ trees, now, plots, maxPlots, expandCost, leaves, onClickEmpty, onExpand, onRemove }: Props) {
+export function Garden({
+  trees,
+  now,
+  plots,
+  maxPlots,
+  expandCost,
+  leaves,
+  selectMode,
+  selected,
+  onClickEmpty,
+  onExpand,
+  onToggleSelect,
+}: Props) {
   return (
     <div className="garden-grid">
       {trees.map((tree, i) => (
@@ -22,12 +36,14 @@ export function Garden({ trees, now, plots, maxPlots, expandCost, leaves, onClic
           key={tree ? tree.id : `empty-${i}`}
           tree={tree}
           now={now}
+          selectMode={selectMode}
+          selected={selected.has(i)}
           onClickEmpty={() => onClickEmpty(i)}
-          onRemove={() => onRemove(i)}
+          onToggleSelect={() => onToggleSelect(i)}
         />
       ))}
       {plots < maxPlots && (
-        <button className="plot plot-expand" disabled={leaves < expandCost} onClick={onExpand}>
+        <button className="plot plot-expand" disabled={leaves < expandCost || selectMode} onClick={onExpand}>
           <span className="plot-empty-icon">🌱</span>
           <span className="plot-empty-label">Новый участок</span>
           <span className="plot-expand-cost">{formatLeaves(expandCost)} 🍃</span>

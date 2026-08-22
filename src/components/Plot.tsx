@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
 import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration } from '../game/economy';
@@ -8,16 +7,16 @@ import { LeafParticles } from './LeafParticles';
 interface Props {
   tree: PlantedTree | null;
   now: number;
+  selectMode: boolean;
+  selected: boolean;
   onClickEmpty: () => void;
-  onRemove: () => void;
+  onToggleSelect: () => void;
 }
 
-export function Plot({ tree, now, onClickEmpty, onRemove }: Props) {
-  const [confirming, setConfirming] = useState(false);
-
+export function Plot({ tree, now, selectMode, selected, onClickEmpty, onToggleSelect }: Props) {
   if (!tree) {
     return (
-      <button className="plot plot-empty" onClick={onClickEmpty}>
+      <button className="plot plot-empty" onClick={onClickEmpty} disabled={selectMode}>
         <span className="plot-empty-icon">+</span>
         <span className="plot-empty-label">Посадить</span>
       </button>
@@ -30,27 +29,19 @@ export function Plot({ tree, now, onClickEmpty, onRemove }: Props) {
   const stage = growthStage(ageSeconds);
 
   return (
-    <div className="plot plot-filled" title={`${species.name} · ${STAGE_NAMES[stage]} · возраст ${formatDuration(ageSeconds)}`}>
+    <button
+      type="button"
+      className={`plot plot-filled ${selectMode ? 'plot-selectable' : ''} ${selected ? 'plot-selected' : ''}`}
+      title={`${species.name} · ${STAGE_NAMES[stage]} · возраст ${formatDuration(ageSeconds)}`}
+      onClick={selectMode ? onToggleSelect : undefined}
+    >
       <LeafParticles />
       <TreeSprite species={species} ageSeconds={ageSeconds} />
       <div className="plot-info">
         <span className="plot-name">{species.name}</span>
         <span className="plot-rate">+{formatLeaves(rate)}/с</span>
       </div>
-      {!confirming && (
-        <button className="plot-remove" title="Срубить дерево" onClick={() => setConfirming(true)}>
-          ×
-        </button>
-      )}
-      {confirming && (
-        <div className="plot-confirm">
-          <span>Срубить?</span>
-          <div className="plot-confirm-buttons">
-            <button className="plot-confirm-yes" onClick={onRemove}>Да</button>
-            <button className="plot-confirm-no" onClick={() => setConfirming(false)}>Нет</button>
-          </div>
-        </div>
-      )}
-    </div>
+      {selectMode && <span className={`plot-checkbox ${selected ? 'checked' : ''}`}>{selected ? '✓' : ''}</span>}
+    </button>
   );
 }

@@ -65,9 +65,85 @@
 .main {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   padding: 24px;
+}
+
+.toolbar {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.toolbar-trash {
+  border: none;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.15s, transform 0.15s;
+}
+
+.toolbar-trash:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.toolbar-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f4a2a;
+  flex-wrap: wrap;
+}
+
+.toolbar-confirm {
+  background: rgba(255, 244, 240, 0.9);
+  color: #7a2f22;
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar-buttons button {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.toolbar-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbar-danger {
+  background: #c0483f;
+  color: #fff;
+}
+
+.toolbar-secondary {
+  background: #e8eee3;
+  color: #2f4a2a;
 }
 
 .garden-grid {
@@ -130,6 +206,45 @@
 .plot-filled {
   background: radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.15));
   cursor: default;
+  padding: 0;
+  text-align: center;
+}
+
+.plot-selectable {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.plot-selectable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.plot-selected {
+  box-shadow: 0 0 0 3px #c0483f inset;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 220, 210, 0.7), rgba(255, 220, 210, 0.25));
+}
+
+.plot-checkbox {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.8);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plot-checkbox.checked {
+  background: #c0483f;
+  border-color: #c0483f;
 }
 
 .tree-sprite {
@@ -179,74 +294,6 @@
 .plot-rate {
   font-size: 11px;
   color: #3d6e2f;
-}
-
-.plot-remove {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
-}
-
-.plot-filled:hover .plot-remove {
-  opacity: 1;
-}
-
-.plot-remove:hover {
-  background: rgba(178, 46, 46, 0.85);
-}
-
-.plot-confirm {
-  position: absolute;
-  inset: 0;
-  background: rgba(20, 25, 15, 0.72);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 18px;
-}
-
-.plot-confirm-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.plot-confirm-buttons button {
-  border: none;
-  border-radius: 8px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.plot-confirm-yes {
-  background: #c0483f;
-  color: #fff;
-}
-
-.plot-confirm-no {
-  background: #e8eee3;
-  color: #2f4a2a;
 }
 
 .leaf-particles {

@@ -133,14 +133,14 @@ export function useGarden() {
     });
   }, []);
 
-  const removeTree = useCallback((plotIndex: number) => {
+  const removeTrees = useCallback((plotIndices: number[]) => {
     setGame((prev) => {
-      if (!prev.trees[plotIndex]) return prev;
+      if (plotIndices.length === 0) return prev;
       const trees = [...prev.trees];
-      trees[plotIndex] = null;
+      for (const index of plotIndices) trees[index] = null;
       return { ...prev, trees };
     });
   }, []);
 
-  return { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTree };
+  return { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTrees };
 }
