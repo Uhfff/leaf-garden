@@ -1,0 +1,363 @@
+.app {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #bfe3ef 0%, #d9f0d8 35%, #eaf6e2 100%);
+}
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.hud-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-title h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2f4a2a;
+  letter-spacing: -0.3px;
+}
+
+.hud-emoji {
+  font-size: 28px;
+}
+
+.hud-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.hud-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.hud-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #23381f;
+}
+
+.hud-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5a6f52;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.plot {
+  position: relative;
+  aspect-ratio: 1 / 1.1;
+  border-radius: 18px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.plot-empty,
+.plot-expand {
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px dashed rgba(76, 110, 66, 0.35);
+  color: #4c6e42;
+  gap: 4px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.plot-empty:hover,
+.plot-expand:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+}
+
+.plot-expand:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plot-empty-icon {
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.plot-empty-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.plot-expand-cost {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.plot-filled {
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.15));
+  cursor: default;
+}
+
+.tree-sprite {
+  width: 78%;
+  height: 78%;
+  overflow: visible;
+}
+
+.tree-shadow {
+  fill: rgba(0, 0, 0, 0.15);
+}
+
+.tree-sway {
+  animation: sway 4.5s ease-in-out infinite;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.tree-sparkle {
+  animation: sparkle 1.8s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+.plot-info {
+  position: absolute;
+  bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.plot-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2f4a2a;
+}
+
+.plot-rate {
+  font-size: 11px;
+  color: #3d6e2f;
+}
+
+.leaf-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.leaf-particle {
+  position: absolute;
+  top: 30%;
+  font-size: 14px;
+  animation-name: float-up;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--drift), -60px) rotate(90deg);
+    opacity: 0;
+  }
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 45, 25, 0.9);
+  color: #eafbe4;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 20;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 30, 15, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 30;
+}
+
+.modal {
+  background: #fbfdf7;
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #2f4a2a;
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #5a6f52;
+  padding: 4px 8px;
+}
+
+.species-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.species-card {
+  display: flex;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid rgba(76, 110, 66, 0.2);
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.species-card:not(:disabled):hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.species-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.species-card.locked {
+  opacity: 0.5;
+}
+
+.species-swatch {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.species-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.species-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.species-name {
+  font-weight: 700;
+  color: #2f4a2a;
+}
+
+.species-cost {
+  font-weight: 700;
+  color: #3d6e2f;
+  font-size: 13px;
+}
+
+.species-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #5a6f52;
+}
+
+.species-income {
+  font-size: 11px;
+  color: #7a8a72;
+}
+
+.species-locked-label {
+  font-size: 11px;
+  color: #b25a3a;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .hud {
+    padding: 12px 14px;
+  }
+  .hud-title h1 {
+    font-size: 18px;
+  }
+  .hud-value {
+    font-size: 15px;
+  }
+  .main {
+    padding: 14px;
+  }
+}
