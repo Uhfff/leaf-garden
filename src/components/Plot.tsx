@@ -57,7 +57,9 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
   return (
     <button
       type="button"
-      className={`plot plot-filled ${selectMode ? 'plot-selectable' : ''} ${selected ? 'plot-selected' : ''}`}
+      className={`plot plot-filled ${selectMode ? `plot-selectable plot-action-${action}` : ''} ${
+        selected ? 'plot-selected' : ''
+      }`}
       title={`${species.name} · ${STAGE_NAMES[stage]} · возраст ${formatDuration(ageSeconds)}`}
       onClick={selectMode ? onToggleSelect : undefined}
     >
