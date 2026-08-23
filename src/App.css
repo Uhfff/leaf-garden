@@ -25,6 +25,7 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom);
   color: var(--text);
   background:
     radial-gradient(ellipse 900px 500px at 15% -10%, rgba(52, 211, 153, 0.16), transparent 60%),
@@ -38,7 +39,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 24px;
+  padding: calc(16px + env(safe-area-inset-top)) 24px 16px;
   background: rgba(10, 16, 28, 0.65);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);

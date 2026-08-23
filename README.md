@@ -35,6 +35,10 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   plus every upgrade bought since — so experimenting isn't a dead loss.
 - **Local-only.** Progress is saved to `localStorage`. No backend, no
   accounts.
+- **Playable as a Telegram Mini App.** Loads the Telegram Web App SDK and,
+  when actually opened inside Telegram, expands to full height and matches
+  the app's header/background to its own dark theme. Outside Telegram it's
+  a no-op, so the same build works as a plain website too.
 
 ## Stack
 
@@ -50,6 +54,8 @@ src/
   game/economy.ts       Pure math: income rate, the closed-form earnings
                          integral, cost scaling, number/duration formatting
   game/useGarden.ts     Game state, save/load + offline catch-up, tick loop
+  telegram.ts            Telegram Web App SDK init (ready/expand/theming),
+                         a no-op outside Telegram
   components/           TreeSprite (SVG), Plot, Garden, Shop modal, HUD,
                          SelectionToolbar (multi-select upgrade/delete),
                          LeafParticles (ambient falling-leaf effect)
