@@ -600,6 +600,127 @@
   font-weight: 600;
 }
 
+.case-box {
+  width: 96px;
+  height: 96px;
+  margin: 8px auto 12px;
+  border-radius: var(--radius-lg);
+  background: radial-gradient(circle at 50% 35%, rgba(251, 191, 36, 0.22), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px -8px rgba(251, 191, 36, 0.35);
+}
+
+.case-box-icon {
+  font-size: 44px;
+}
+
+.case-shaking {
+  animation: case-shake 0.35s ease-in-out infinite;
+}
+
+@keyframes case-shake {
+  0%, 100% { transform: rotate(-6deg) scale(1); }
+  50% { transform: rotate(6deg) scale(1.05); }
+}
+
+.case-result {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--boost);
+  text-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
+  margin: 0 0 10px;
+}
+
+.case-warning {
+  text-align: center;
+  font-size: 12px;
+  color: var(--danger);
+  margin: 0 0 10px;
+}
+
+.case-open-btn {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--boost);
+  color: #2a1c00;
+  box-shadow: 0 0 20px -6px var(--boost);
+  transition: filter 0.15s;
+}
+
+.case-open-btn:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+.case-open-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.case-drops {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.case-drops-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+.case-drop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.case-drop-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.case-drop-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.case-drop-icon .tree-sprite {
+  width: 100%;
+  height: 100%;
+}
+
+.case-drop-icon .tree-sway {
+  animation: none;
+}
+
+.case-drop-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.case-drop-chance {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
 @media (max-width: 640px) {
   .hud {
     padding: 12px 14px;

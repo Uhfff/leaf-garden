@@ -7,9 +7,15 @@ centuries-old oak becomes a real source of income. The currency is leaves.
 
 ## How it works
 
-- **Five tree species** (Birch → Maple → Oak → Willow → Sakura), each with a
-  different cost, base income, and growth rate. Rarer species unlock as your
-  lifetime earnings grow.
+- **Eight tree species** (Birch → Maple → Oak → Willow → Sakura → Spruce →
+  Baobab → Sequoia), each with a different cost, base income, and growth
+  rate. Rarer species unlock as your lifetime earnings grow.
+- **Cases.** A 2,000-leaf case gives a random species — weighted toward the
+  cheap ones but able to land any of the eight, including species you
+  haven't unlocked the normal way yet. Odds are shown up front. The won
+  tree plants itself into your first empty plot for free (needs one open);
+  since nothing was actually spent on the tree itself, removing it later
+  refunds nothing.
 - **Income scales with age.** Every planted tree's income follows
   `base * (1 + growthRate * sqrt(age))` — always increasing, but with
   diminishing returns, so there's no single "best" tree to spam forever.
@@ -50,7 +56,8 @@ colors, growth stage), not image assets.
 ```
 src/
   types.ts            Domain types: TreeSpecies, PlantedTree, GameState
-  data/species.ts      The five tree species and their stats
+  data/species.ts      The eight tree species and their stats
+  data/cases.ts         Case definitions and the weighted species roll
   game/economy.ts       Pure math: income rate, the closed-form earnings
                          integral, cost scaling, number/duration formatting
   game/useGarden.ts     Game state, save/load + offline catch-up, tick loop

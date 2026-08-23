@@ -19,6 +19,7 @@ interface Props {
   onRequestDeleteConfirm: () => void;
   onConfirmDelete: () => void;
   onCancel: () => void;
+  onOpenCase: () => void;
 }
 
 export function SelectionToolbar({
@@ -36,6 +37,7 @@ export function SelectionToolbar({
   onRequestDeleteConfirm,
   onConfirmDelete,
   onCancel,
+  onOpenCase,
 }: Props) {
   if (!action) {
     return (
@@ -47,6 +49,9 @@ export function SelectionToolbar({
         ))}
         <button className="toolbar-icon-btn" title="Удалить деревья" onClick={() => onStart('delete')}>
           🗑
+        </button>
+        <button className="toolbar-icon-btn" title="Кейсы" onClick={onOpenCase}>
+          🎁
         </button>
       </div>
     );

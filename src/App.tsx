@@ -4,6 +4,7 @@ import { useNow } from './hooks/useNow';
 import { HUD } from './components/HUD';
 import { Garden } from './components/Garden';
 import { PlantModal } from './components/PlantModal';
+import { CaseModal } from './components/CaseModal';
 import { SelectionToolbar, type ActionType } from './components/SelectionToolbar';
 import { formatLeaves, UPGRADES, type BoostQuantity, type UpgradeType } from './game/economy';
 import './App.css';
@@ -15,6 +16,7 @@ export default function App() {
     offlineEarnings,
     gift,
     plantTree,
+    openCase,
     buyPlot,
     removeTrees,
     applyUpgrade,
@@ -25,6 +27,7 @@ export default function App() {
   } = useGarden();
   const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
+  const [caseModalOpen, setCaseModalOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -108,6 +111,7 @@ export default function App() {
             onRequestDeleteConfirm={() => setConfirmingDelete(true)}
             onConfirmDelete={confirmDelete}
             onCancel={exitSelection}
+            onOpenCase={() => setCaseModalOpen(true)}
           />
         </div>
         <Garden
@@ -134,6 +138,14 @@ export default function App() {
             setOpenPlot(null);
           }}
           onClose={() => setOpenPlot(null)}
+        />
+      )}
+      {caseModalOpen && (
+        <CaseModal
+          leaves={game.leaves}
+          hasEmptyPlot={game.trees.some((t) => !t)}
+          onOpen={openCase}
+          onClose={() => setCaseModalOpen(false)}
         />
       )}
       {toast && <div className="toast">{toast}</div>}

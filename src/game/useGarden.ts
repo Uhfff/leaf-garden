@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
+import { CASE_MAP, rollCaseSpecies } from '../data/cases';
 import {
   costForLevels,
   earningsForTree,
@@ -228,6 +229,32 @@ export function useGarden() {
     });
   }, []);
 
+  /** Opens a case: rolls a random species (independent of that species' normal
+   *  unlock requirement — that's the appeal of a lucky pull) and plants it
+   *  straight into the first empty plot. Needs an empty plot to succeed. */
+  const openCase = useCallback((caseId: string): { speciesName: string } | null => {
+    const current = gameRef.current;
+    const caseDef = CASE_MAP[caseId];
+    if (!caseDef || current.leaves < caseDef.cost) return null;
+    const emptyIndex = current.trees.findIndex((t) => !t);
+    if (emptyIndex === -1) return null;
+    const species = rollCaseSpecies(caseDef);
+    setGame((prev) => {
+      const trees = [...prev.trees];
+      trees[emptyIndex] = {
+        id: crypto.randomUUID(),
+        speciesId: species.id,
+        plantedAt: Date.now(),
+        invested: 0,
+        waterUntil: 0,
+        fertilizeUntil: 0,
+        boostLevel: 0,
+      };
+      return { ...prev, leaves: prev.leaves - caseDef.cost, trees };
+    });
+    return { speciesName: species.name };
+  }, []);
+
   const buyPlot = useCallback(() => {
     setGame((prev) => {
       if (prev.plots >= MAX_PLOTS) return prev;
@@ -379,6 +406,7 @@ export function useGarden() {
     offlineEarnings,
     gift,
     plantTree,
+    openCase,
     buyPlot,
     removeTrees,
     applyUpgrade,
