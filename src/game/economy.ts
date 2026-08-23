@@ -51,14 +51,14 @@ export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
     label: 'Полить',
     icon: '💧',
     bonus: 0.2,
-    durationMs: 3 * 60 * 1000,
+    durationMs: 30 * 60 * 1000,
     cost: (species) => Math.max(1, Math.round(species.cost * 0.5)),
   },
   fertilize: {
     label: 'Удобрить',
     icon: '🌿',
     bonus: 0.4,
-    durationMs: 8 * 60 * 1000,
+    durationMs: 60 * 60 * 1000,
     cost: (species) => Math.max(1, Math.round(species.cost * 1.5)),
   },
   boost: {
@@ -138,7 +138,7 @@ export function formatDuration(seconds: number): string {
   const m = Math.floor(s / 60);
   if (m < 60) return `${m} мин`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} ч ${m % 60} мин`;
+  if (h < 24) return m % 60 === 0 ? `${h} ч` : `${h} ч ${m % 60} мин`;
   const d = Math.floor(h / 24);
   return `${d} д ${h % 24} ч`;
 }
