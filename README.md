@@ -24,10 +24,10 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   just pays the cost again and refreshes the timer to full. While picking
   trees to water/fertilize, an already-active tree shows its remaining time
   right on the plot, so the choice to refresh it is an informed one. Boosting
-  is the opposite: a permanent,
-  endlessly stackable multiplier with its own escalating cost, buyable ×1,
-  ×10, ×100, or MAX (spends everything you have, greedily buying whichever
-  selected tree's next level is cheapest until you're out). All three can be
+  is the opposite: a permanent multiplier with its own escalating cost,
+  stackable up to level 50, buyable ×1, ×10, ×100, or MAX (spends everything
+  you have, greedily buying whichever selected tree's next level is cheapest
+  until you're out or every selected tree is maxed). All three can be
   applied to several selected trees at once (same selection UI as removal),
   and buff expiry survives being offline — a buff's exact contribution is
   integrated piecewise around its expiry timestamp, not just approximated.

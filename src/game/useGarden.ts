@@ -5,6 +5,7 @@ import {
   costForLevels,
   earningsForTree,
   incomeRate,
+  levelsWithinCap,
   maxBoostAllocation,
   nextCost,
   REFUND_RATE,
@@ -58,17 +59,41 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
 }
 
 const GIFT_MAX = 1e15;
+const USED_VOUCHERS_KEY = 'leaf-garden-used-vouchers';
 
 /** A `?gift=N` link adds N leaves to whoever opens it — a way to send a
  *  friend (or yourself, on another device) a pile of leaves without any
- *  server, since saves are purely local to each browser. */
-function readGiftFromUrl(): number {
-  if (typeof window === 'undefined') return 0;
-  const raw = new URLSearchParams(window.location.search).get('gift');
-  if (!raw) return 0;
-  const value = Math.floor(Number(raw));
-  if (!Number.isFinite(value) || value <= 0) return 0;
-  return Math.min(value, GIFT_MAX);
+ *  server, since saves are purely local to each browser. The raw string is
+ *  also the voucher's identity: once redeemed in a browser, that exact code
+ *  won't pay out again there, so re-opening a saved/bookmarked link is a
+ *  no-op instead of free leaves every time. */
+function readVoucherFromUrl(): { code: string; amount: number } | null {
+  if (typeof window === 'undefined') return null;
+  const code = new URLSearchParams(window.location.search).get('gift');
+  if (!code) return null;
+  const value = Math.floor(Number(code));
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return { code, amount: Math.min(value, GIFT_MAX) };
+}
+
+function isVoucherUsed(code: string): boolean {
+  try {
+    const raw = localStorage.getItem(USED_VOUCHERS_KEY);
+    const used: string[] = raw ? JSON.parse(raw) : [];
+    return used.includes(code);
+  } catch {
+    return false;
+  }
+}
+
+function markVoucherUsed(code: string) {
+  try {
+    const raw = localStorage.getItem(USED_VOUCHERS_KEY);
+    const used: string[] = raw ? JSON.parse(raw) : [];
+    if (!used.includes(code)) localStorage.setItem(USED_VOUCHERS_KEY, JSON.stringify([...used, code]));
+  } catch {
+    /* storage unavailable — voucher just won't be remembered as used */
+  }
 }
 
 function clearGiftFromUrl() {
@@ -77,12 +102,19 @@ function clearGiftFromUrl() {
   window.history.replaceState({}, '', url.toString());
 }
 
-function loadSave(): { state: GameState; offlineEarnings: number; gift: number } {
+function loadSave(): { state: GameState; offlineEarnings: number; gift: number; giftCode: string | null } {
   const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-  const gift = readGiftFromUrl();
+  const voucher = readVoucherFromUrl();
+  const gift = voucher && !isVoucherUsed(voucher.code) ? voucher.amount : 0;
+  const giftCode = voucher ? voucher.code : null;
   if (!raw) {
     const state = freshState();
-    return { state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift }, offlineEarnings: 0, gift };
+    return {
+      state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift },
+      offlineEarnings: 0,
+      gift,
+      giftCode,
+    };
   }
   try {
     const parsed = JSON.parse(raw) as GameState;
@@ -100,10 +132,16 @@ function loadSave(): { state: GameState; offlineEarnings: number; gift: number }
       },
       offlineEarnings: earnings,
       gift,
+      giftCode,
     };
   } catch {
     const state = freshState();
-    return { state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift }, offlineEarnings: 0, gift };
+    return {
+      state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift },
+      offlineEarnings: 0,
+      gift,
+      giftCode,
+    };
   }
 }
 
@@ -116,13 +154,16 @@ export function useGarden() {
   const [game, setGame] = useState(initial.current.state);
   const [offlineEarnings] = useState(initial.current.offlineEarnings);
   const [gift] = useState(initial.current.gift);
+  const [giftCode] = useState(initial.current.giftCode);
   const [incomePerSec, setIncomePerSec] = useState(0);
   const gameRef = useRef(game);
   gameRef.current = game;
 
   useEffect(() => {
-    if (gift > 0) clearGiftFromUrl();
-  }, [gift]);
+    if (!giftCode) return;
+    if (gift > 0) markVoucherUsed(giftCode);
+    clearGiftFromUrl();
+  }, [gift, giftCode]);
 
   useEffect(() => {
     const tick = () => {
@@ -289,19 +330,21 @@ export function useGarden() {
         return { levels: totalLevels, cost: totalCost };
       }
 
-      const costs = entries.map((e) => costForLevels(e.species, e.level, quantity));
+      const grantedLevels = entries.map((e) => levelsWithinCap(e.level, quantity));
+      const costs = entries.map((e, idx) => costForLevels(e.species, e.level, grantedLevels[idx]));
       const total = costs.reduce((a, b) => a + b, 0);
-      if (current.leaves < total) return null;
+      const totalLevels = grantedLevels.reduce((a, b) => a + b, 0);
+      if (totalLevels === 0 || current.leaves < total) return null;
       setGame((prev) => {
         const trees = [...prev.trees];
         targets.forEach((i, idx) => {
           const tree = trees[i];
-          if (!tree) return;
-          trees[i] = { ...tree, boostLevel: tree.boostLevel + quantity, invested: tree.invested + costs[idx] };
+          if (!tree || grantedLevels[idx] === 0) return;
+          trees[i] = { ...tree, boostLevel: tree.boostLevel + grantedLevels[idx], invested: tree.invested + costs[idx] };
         });
         return { ...prev, leaves: prev.leaves - total, trees };
       });
-      return { levels: quantity * targets.length, cost: total };
+      return { levels: totalLevels, cost: total };
     },
     [],
   );
@@ -318,7 +361,8 @@ export function useGarden() {
       return { cost: totalCost, levels: levels.reduce((a, b) => a + b, 0) };
     }
     const cost = entries.reduce((sum, e) => sum + costForLevels(e.species, e.level, quantity), 0);
-    return { cost, levels: quantity * targets.length };
+    const levels = entries.reduce((sum, e) => sum + levelsWithinCap(e.level, quantity), 0);
+    return { cost, levels };
   }, []);
 
   const refundFor = useCallback((plotIndices: number[]): number => {

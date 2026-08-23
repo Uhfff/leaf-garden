@@ -73,20 +73,30 @@ export function upgradeCost(type: UpgradeType, species: TreeSpecies, boostLevel:
   return UPGRADES[type].cost(species, boostLevel);
 }
 
-/** Total cost of buying `count` consecutive boost levels starting from `fromLevel`. */
+export const MAX_BOOST_LEVEL = 50;
+
+/** Total cost of buying up to `count` consecutive boost levels starting from
+ *  `fromLevel`, capped so the tree never exceeds MAX_BOOST_LEVEL. */
 export function costForLevels(species: TreeSpecies, fromLevel: number, count: number): number {
+  const capped = Math.max(0, Math.min(count, MAX_BOOST_LEVEL - fromLevel));
   let total = 0;
-  for (let k = 0; k < count; k++) total += upgradeCost('boost', species, fromLevel + k);
+  for (let k = 0; k < capped; k++) total += upgradeCost('boost', species, fromLevel + k);
   return total;
+}
+
+/** How many of the requested levels can actually be bought before hitting the cap. */
+export function levelsWithinCap(fromLevel: number, requested: number): number {
+  return Math.max(0, Math.min(requested, MAX_BOOST_LEVEL - fromLevel));
 }
 
 export type BoostQuantity = 1 | 10 | 100 | 'max';
 
 /**
  * Greedily spends `budget` on the single cheapest next boost level available
- * across all entries, repeatedly, until nothing more is affordable. Correct
- * because each entry's own cost only ever increases, so the cheapest option
- * globally is never made a better buy by waiting.
+ * across all entries, repeatedly, until nothing more is affordable or every
+ * entry has hit MAX_BOOST_LEVEL. Correct because each entry's own cost only
+ * ever increases, so the cheapest option globally is never made a better
+ * buy by waiting.
  */
 export function maxBoostAllocation(
   entries: { species: TreeSpecies; level: number }[],
@@ -98,6 +108,7 @@ export function maxBoostAllocation(
     let bestIndex = -1;
     let bestCost = Infinity;
     for (let i = 0; i < entries.length; i++) {
+      if (entries[i].level + levels[i] >= MAX_BOOST_LEVEL) continue;
       const cost = upgradeCost('boost', entries[i].species, entries[i].level + levels[i]);
       if (cost < bestCost) {
         bestCost = cost;

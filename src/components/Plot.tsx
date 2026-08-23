@@ -1,6 +1,6 @@
 import type { PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
-import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplierAt, UPGRADES } from '../game/economy';
+import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplierAt, UPGRADES, MAX_BOOST_LEVEL } from '../game/economy';
 import type { ActionType } from './SelectionToolbar';
 import { TreeSprite } from './TreeSprite';
 import { LeafParticles } from './LeafParticles';
@@ -42,7 +42,8 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
     });
   }
   if (tree.boostLevel > 0) {
-    badges.push({ key: 'boost', label: `${UPGRADES.boost.icon}${tree.boostLevel}` });
+    const maxed = tree.boostLevel >= MAX_BOOST_LEVEL;
+    badges.push({ key: 'boost', label: `${UPGRADES.boost.icon}${tree.boostLevel}${maxed ? ' MAX' : ''}` });
   }
 
   // Outside select mode, show every badge. While picking trees to water/fertilize,
