@@ -113,7 +113,7 @@ export function SelectionToolbar({
 
   const canAfford = selectedCount > 0 && leaves >= cost;
   const durationHint = def.durationMs
-    ? ` на ${formatDuration(def.durationMs / 1000)} (уже политые/удобренные деревья недоступны для выбора)`
+    ? ` на ${formatDuration(def.durationMs / 1000)} (уже активным деревьям обновит таймер)`
     : '';
   return (
     <div className="toolbar-bar">

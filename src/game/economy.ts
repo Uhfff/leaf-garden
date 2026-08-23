@@ -69,14 +69,6 @@ export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
   },
 };
 
-/** Whether a tree can receive this upgrade right now — boost always can; a
- *  buff can only be (re)applied once its previous application has expired. */
-export function isUpgradeEligible(tree: PlantedTree, type: UpgradeType, nowMs: number): boolean {
-  if (type === 'water') return !tree.waterUntil || tree.waterUntil <= nowMs;
-  if (type === 'fertilize') return !tree.fertilizeUntil || tree.fertilizeUntil <= nowMs;
-  return true;
-}
-
 export function upgradeCost(type: UpgradeType, species: TreeSpecies, boostLevel: number): number {
   return UPGRADES[type].cost(species, boostLevel);
 }

@@ -1,15 +1,6 @@
 import type { PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
-import {
-  formatLeaves,
-  incomeRate,
-  STAGE_NAMES,
-  growthStage,
-  formatDuration,
-  treeMultiplierAt,
-  isUpgradeEligible,
-  UPGRADES,
-} from '../game/economy';
+import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplierAt, UPGRADES } from '../game/economy';
 import type { ActionType } from './SelectionToolbar';
 import { TreeSprite } from './TreeSprite';
 import { LeafParticles } from './LeafParticles';
@@ -39,8 +30,6 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
   const ageSeconds = (now - tree.plantedAt) / 1000;
   const rate = incomeRate(species, ageSeconds, treeMultiplierAt(tree, now));
   const stage = growthStage(ageSeconds);
-  const eligible = action !== null && action !== 'delete' ? isUpgradeEligible(tree, action, now) : true;
-  const canInteract = selectMode && eligible;
 
   const badges: { key: string; label: string }[] = [];
   if (tree.waterUntil > now) {
@@ -56,24 +45,30 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
     badges.push({ key: 'boost', label: `${UPGRADES.boost.icon}${tree.boostLevel}` });
   }
 
+  // Outside select mode, show every badge. While picking trees to water/fertilize,
+  // show only that buff's remaining time — it's the number relevant to the decision
+  // of whether to refresh an already-active tree. Other select modes show none.
+  const visibleBadges = !selectMode
+    ? badges
+    : action === 'water' || action === 'fertilize'
+      ? badges.filter((b) => b.key === action)
+      : [];
+
   return (
     <button
       type="button"
-      className={`plot plot-filled ${selectMode ? 'plot-selectable' : ''} ${selected ? 'plot-selected' : ''} ${
-        selectMode && !eligible ? 'plot-ineligible' : ''
-      }`}
+      className={`plot plot-filled ${selectMode ? 'plot-selectable' : ''} ${selected ? 'plot-selected' : ''}`}
       title={`${species.name} · ${STAGE_NAMES[stage]} · возраст ${formatDuration(ageSeconds)}`}
-      disabled={selectMode && !eligible}
-      onClick={canInteract ? onToggleSelect : undefined}
+      onClick={selectMode ? onToggleSelect : undefined}
     >
       <LeafParticles />
       <TreeSprite species={species} ageSeconds={ageSeconds} />
       <div className="plot-info">
         <span className="plot-name">{species.name}</span>
         <span className="plot-rate">+{formatLeaves(rate)}/с</span>
-        {badges.length > 0 && !selectMode && (
+        {visibleBadges.length > 0 && (
           <span className="plot-badges">
-            {badges.map((b) => (
+            {visibleBadges.map((b) => (
               <span key={b.key} className="plot-badge">
                 {b.label}
               </span>
@@ -81,7 +76,7 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
           </span>
         )}
       </div>
-      {canInteract && <span className={`plot-checkbox ${selected ? 'checked' : ''}`}>{selected ? '✓' : ''}</span>}
+      {selectMode && <span className={`plot-checkbox ${selected ? 'checked' : ''}`}>{selected ? '✓' : ''}</span>}
     </button>
   );
 }

@@ -5,7 +5,6 @@ import {
   costForLevels,
   earningsForTree,
   incomeRate,
-  isUpgradeEligible,
   maxBoostAllocation,
   nextCost,
   REFUND_RATE,
@@ -182,14 +181,12 @@ export function useGarden() {
     return refund;
   }, []);
 
-  /** Applies one upgrade to every eligible selected tree, atomically (all or nothing). */
+  /** Applies one upgrade to every selected tree, atomically (all or nothing). Reapplying
+   *  water/fertilize to an already-buffed tree simply refreshes its duration. */
   const applyUpgrade = useCallback((type: UpgradeType, plotIndices: number[]): boolean => {
     const current = gameRef.current;
     const now = Date.now();
-    const targets = plotIndices.filter((i) => {
-      const tree = current.trees[i];
-      return !!tree && isUpgradeEligible(tree, type, now);
-    });
+    const targets = plotIndices.filter((i) => current.trees[i]);
     if (targets.length === 0) return false;
     const costs = targets.map((i) => {
       const tree = current.trees[i]!;
@@ -219,10 +216,9 @@ export function useGarden() {
 
   const upgradeCostFor = useCallback((type: UpgradeType, plotIndices: number[]): number => {
     const current = gameRef.current;
-    const now = Date.now();
     return plotIndices.reduce((sum, i) => {
       const tree = current.trees[i];
-      if (!tree || !isUpgradeEligible(tree, type, now)) return sum;
+      if (!tree) return sum;
       const species = SPECIES_MAP[tree.speciesId];
       return sum + upgradeCost(type, species, tree.boostLevel);
     }, 0);
