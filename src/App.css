@@ -606,40 +606,122 @@
   font-weight: 600;
 }
 
-.case-spin-box {
+.promo-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.promo-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.promo-input:focus {
+  outline: none;
+  border-color: var(--leaf);
+}
+
+.promo-form button {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.promo-form button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.case-reel-viewport {
   position: relative;
   height: 96px;
-  width: 96px;
   margin: 8px auto 12px;
+  overflow: hidden;
   border-radius: var(--radius-lg);
   background: radial-gradient(circle at 50% 35%, rgba(251, 191, 36, 0.16), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--border);
+}
+
+.case-reel-viewport::before,
+.case-reel-viewport::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 36px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.case-reel-viewport::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-1), transparent);
+}
+
+.case-reel-viewport::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-1), transparent);
+}
+
+.case-reel-pointer {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--boost);
+  box-shadow: 0 0 10px var(--boost);
+  transform: translateX(-1px);
+  z-index: 3;
+}
+
+/* Anchored flush to the viewport's own left edge (not flex-centered — a
+   centered flex item that overflows its container shifts by however much
+   it overflows, which threw off every translateX distance calculated
+   below and left the reel mostly off-screen). */
+.case-reel-strip {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+}
+
+.case-reel-item {
+  flex: none;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 8px;
 }
 
-.case-spin-icon {
-  width: 76px;
-  height: 76px;
-  animation: case-pop 0.12s ease-out;
+.case-reel-item .tree-sprite {
+  width: 80%;
+  height: 80%;
 }
 
-.case-spin-icon .tree-sway {
+.case-reel-item .tree-sway {
   animation: none;
 }
 
-.case-spin-icon-won {
-  animation: case-pop 0.25s ease-out;
-  filter: drop-shadow(0 0 14px var(--boost));
-}
-
-@keyframes case-pop {
-  0% { transform: scale(0.82); opacity: 0.55; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 .case-box-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 44px;
 }
 

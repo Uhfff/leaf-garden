@@ -5,6 +5,7 @@ import { HUD } from './components/HUD';
 import { Garden } from './components/Garden';
 import { PlantModal } from './components/PlantModal';
 import { CaseModal } from './components/CaseModal';
+import { PromoCodeModal } from './components/PromoCodeModal';
 import { SelectionToolbar, type ActionType } from './components/SelectionToolbar';
 import { formatLeaves, UPGRADES, type BoostQuantity, type UpgradeType } from './game/economy';
 import './App.css';
@@ -18,6 +19,7 @@ export default function App() {
     plantTree,
     openCase,
     sellInventoryTree,
+    redeemPromoCode,
     buyPlot,
     removeTrees,
     applyUpgrade,
@@ -29,6 +31,7 @@ export default function App() {
   const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
   const [caseModalOpen, setCaseModalOpen] = useState(false);
+  const [promoModalOpen, setPromoModalOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -113,6 +116,7 @@ export default function App() {
             onConfirmDelete={confirmDelete}
             onCancel={exitSelection}
             onOpenCase={() => setCaseModalOpen(true)}
+            onOpenPromo={() => setPromoModalOpen(true)}
           />
         </div>
         <Garden
@@ -149,6 +153,9 @@ export default function App() {
           onSell={sellInventoryTree}
           onClose={() => setCaseModalOpen(false)}
         />
+      )}
+      {promoModalOpen && (
+        <PromoCodeModal onRedeem={redeemPromoCode} onClose={() => setPromoModalOpen(false)} />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>

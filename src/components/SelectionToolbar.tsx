@@ -21,6 +21,7 @@ interface Props {
   onConfirmDelete: () => void;
   onCancel: () => void;
   onOpenCase: () => void;
+  onOpenPromo: () => void;
 }
 
 export function SelectionToolbar({
@@ -39,6 +40,7 @@ export function SelectionToolbar({
   onConfirmDelete,
   onCancel,
   onOpenCase,
+  onOpenPromo,
 }: Props) {
   const [carePickerOpen, setCarePickerOpen] = useState(false);
 
@@ -75,6 +77,9 @@ export function SelectionToolbar({
         </button>
         <button className="toolbar-icon-btn" title="Кейсы" onClick={onOpenCase}>
           🎁
+        </button>
+        <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>
+          🎟
         </button>
       </div>
     );

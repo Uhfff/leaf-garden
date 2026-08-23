@@ -13,11 +13,12 @@ centuries-old oak becomes a real source of income. The currency is leaves.
 - **Cases.** A 2,000-leaf case gives a random species — weighted toward the
   cheap ones but able to land any of the eight, including species you
   haven't unlocked the normal way yet. Odds are shown up front, and opening
-  one flickers through a sequence of species (drawn from that same weighted
-  roll, ending in the real result) at a slowing pace before landing — one
-  tree on screen at a time, its content swapped rather than animated across
-  the screen, since moving a whole strip of detailed SVGs at once was too
-  much for some browsers to paint smoothly and it came out as a smear.
+  one spins a scrolling reel (drawn from that same weighted roll, ending in
+  the real result) that decelerates into place. The reel is positioned with
+  `left: 0` inside its clipped viewport rather than flex-centered — a
+  centered flex item wider than its container shifts by however much it
+  overflows, which silently broke every distance the spin was calculated
+  to travel and left most of the reel's trees permanently off-screen.
   Landing reveals the full tree art and a choice: sell it on the spot for
   its normal purchase price, or bank it. A banked tree goes to an inventory
   by species rather than straight into the ground; the planting picker
@@ -48,6 +49,9 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   is integrated piecewise around its expiry timestamp, not just approximated.
 - **Removing a tree refunds half of what you put into it** — purchase price
   plus every upgrade bought since — so experimenting isn't a dead loss.
+- **Promo codes.** A code redeemed in-game credits a fixed amount once per
+  browser, using the same used-code ledger as gift links (just under a
+  `promo:` prefix so the two can't collide). Matching is case-insensitive.
 - **Local-only.** Progress is saved to `localStorage`. No backend, no
   accounts.
 - **Playable as a Telegram Mini App.** Loads the Telegram Web App SDK and,
@@ -67,6 +71,7 @@ src/
   types.ts            Domain types: TreeSpecies, PlantedTree, GameState
   data/species.ts      The eight tree species and their stats
   data/cases.ts         Case definitions and the weighted species roll
+  data/promoCodes.ts     Promo code → leaf amount table
   game/economy.ts       Pure math: income rate, the closed-form earnings
                          integral, cost scaling, number/duration formatting
   game/useGarden.ts     Game state, save/load + offline catch-up, tick loop

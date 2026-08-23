@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
 import { CASE_MAP, rollCaseSpecies } from '../data/cases';
+import { findPromoCode, normalizePromoCode } from '../data/promoCodes';
 import {
   costForLevels,
   earningsForTree,
@@ -148,6 +149,8 @@ function loadSave(): { state: GameState; offlineEarnings: number; gift: number; 
   }
 }
 
+export type PromoRedeemResult = { ok: true; amount: number } | { ok: false; reason: 'used' | 'invalid' };
+
 export function plotCost(currentPlots: number): number {
   return nextCost(PLOT_BASE_COST, currentPlots - START_PLOTS, PLOT_SCALE);
 }
@@ -273,6 +276,23 @@ export function useGarden() {
       inventory: { ...prev.inventory, [speciesId]: (prev.inventory[speciesId] ?? 0) - 1 },
     }));
     return payout;
+  }, []);
+
+  /** Promo codes reuse the exact same one-per-browser used-code ledger as
+   *  gift links, just under a "promo:" prefix so a numeric gift code and an
+   *  alphabetic promo code can never collide. */
+  const redeemPromoCode = useCallback((rawCode: string): PromoRedeemResult => {
+    const promo = findPromoCode(rawCode);
+    if (!promo) return { ok: false, reason: 'invalid' };
+    const key = `promo:${normalizePromoCode(rawCode)}`;
+    if (isVoucherUsed(key)) return { ok: false, reason: 'used' };
+    markVoucherUsed(key);
+    setGame((prev) => ({
+      ...prev,
+      leaves: prev.leaves + promo.amount,
+      totalEarned: prev.totalEarned + promo.amount,
+    }));
+    return { ok: true, amount: promo.amount };
   }, []);
 
   const buyPlot = useCallback(() => {
@@ -428,6 +448,7 @@ export function useGarden() {
     plantTree,
     openCase,
     sellInventoryTree,
+    redeemPromoCode,
     buyPlot,
     removeTrees,
     applyUpgrade,
