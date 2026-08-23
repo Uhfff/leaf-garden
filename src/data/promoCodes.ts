@@ -16,6 +16,7 @@ export const PROMO_CODES: PromoCode[] = [
   { code: 'vanyafree', effect: { type: 'leaves', amount: 1_000_000_000_000_000 } },
   { code: 'luck35', effect: { type: 'luckBoost', percent: 35, durationMs: 2 * DAY_MS } },
   { code: 'newcases', effect: { type: 'freeCases', caseId: 'common', count: 50 } },
+  { code: 'specialbonus', effect: { type: 'leaves', amount: 5_000_000_000_000 } },
 ];
 
 export function normalizePromoCode(input: string): string {
