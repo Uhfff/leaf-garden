@@ -133,6 +133,7 @@ export default function App() {
           leaves={game.leaves}
           totalEarned={game.totalEarned}
           trees={game.trees}
+          inventory={game.inventory}
           onPick={(speciesId) => {
             plantTree(openPlot, speciesId);
             setOpenPlot(null);
@@ -141,12 +142,7 @@ export default function App() {
         />
       )}
       {caseModalOpen && (
-        <CaseModal
-          leaves={game.leaves}
-          hasEmptyPlot={game.trees.some((t) => !t)}
-          onOpen={openCase}
-          onClose={() => setCaseModalOpen(false)}
-        />
+        <CaseModal leaves={game.leaves} onOpen={openCase} onClose={() => setCaseModalOpen(false)} />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>

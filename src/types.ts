@@ -28,4 +28,6 @@ export interface GameState {
   plots: number;
   trees: (PlantedTree | null)[];
   lastTick: number;
+  /** Free trees won from cases, banked by species until planted. */
+  inventory: Record<string, number>;
 }

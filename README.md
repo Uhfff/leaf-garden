@@ -12,10 +12,13 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   rate. Rarer species unlock as your lifetime earnings grow.
 - **Cases.** A 2,000-leaf case gives a random species — weighted toward the
   cheap ones but able to land any of the eight, including species you
-  haven't unlocked the normal way yet. Odds are shown up front. The won
-  tree plants itself into your first empty plot for free (needs one open);
-  since nothing was actually spent on the tree itself, removing it later
-  refunds nothing.
+  haven't unlocked the normal way yet. Odds are shown up front, and opening
+  one spins a scrolling reel (built from the same weighted roll, so what
+  you see spin past is honest) that lands on the real result. The won tree
+  goes to your inventory rather than straight into the ground — plant it
+  whenever a plot is free, for free (the planting picker shows a "free"
+  price and how many you're holding). Since nothing was spent on the tree
+  itself, removing it later refunds nothing.
 - **Income scales with age.** Every planted tree's income follows
   `base * (1 + growthRate * sqrt(age))` — always increasing, but with
   diminishing returns, so there's no single "best" tree to spam forever.
@@ -33,10 +36,11 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   is the opposite: a permanent multiplier with its own escalating cost,
   stackable up to level 50, buyable ×1, ×10, ×100, or MAX (spends everything
   you have, greedily buying whichever selected tree's next level is cheapest
-  until you're out or every selected tree is maxed). All three can be
-  applied to several selected trees at once (same selection UI as removal),
-  and buff expiry survives being offline — a buff's exact contribution is
-  integrated piecewise around its expiry timestamp, not just approximated.
+  until you're out or every selected tree is maxed). All three share one
+  toolbar button (a picker for which of the three to run), and all three can
+  be applied to several selected trees at once (same selection UI as
+  removal); buff expiry survives being offline — a buff's exact contribution
+  is integrated piecewise around its expiry timestamp, not just approximated.
 - **Removing a tree refunds half of what you put into it** — purchase price
   plus every upgrade bought since — so experimenting isn't a dead loss.
 - **Local-only.** Progress is saved to `localStorage`. No backend, no

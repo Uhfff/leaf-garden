@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { UPGRADES, formatDuration, formatLeaves, pluralTrees, type BoostQuantity, type UpgradeType } from '../game/economy';
 
 export type ActionType = UpgradeType | 'delete';
@@ -39,14 +40,36 @@ export function SelectionToolbar({
   onCancel,
   onOpenCase,
 }: Props) {
+  const [carePickerOpen, setCarePickerOpen] = useState(false);
+
   if (!action) {
+    if (carePickerOpen) {
+      return (
+        <div className="toolbar-icons">
+          <button className="toolbar-icon-btn" title="Назад" onClick={() => setCarePickerOpen(false)}>
+            ←
+          </button>
+          {(Object.keys(UPGRADES) as UpgradeType[]).map((type) => (
+            <button
+              key={type}
+              className="toolbar-icon-btn"
+              title={UPGRADES[type].label}
+              onClick={() => {
+                setCarePickerOpen(false);
+                onStart(type);
+              }}
+            >
+              {UPGRADES[type].icon}
+            </button>
+          ))}
+        </div>
+      );
+    }
     return (
       <div className="toolbar-icons">
-        {(Object.keys(UPGRADES) as UpgradeType[]).map((type) => (
-          <button key={type} className="toolbar-icon-btn" title={UPGRADES[type].label} onClick={() => onStart(type)}>
-            {UPGRADES[type].icon}
-          </button>
-        ))}
+        <button className="toolbar-icon-btn" title="Уход за деревом (полить/удобрить/улучшить)" onClick={() => setCarePickerOpen(true)}>
+          🌱
+        </button>
         <button className="toolbar-icon-btn" title="Удалить деревья" onClick={() => onStart('delete')}>
           🗑
         </button>

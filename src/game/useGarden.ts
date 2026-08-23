@@ -33,6 +33,7 @@ function freshState(): GameState {
     plots: START_PLOTS,
     trees: Array(START_PLOTS).fill(null),
     lastTick: Date.now(),
+    inventory: {},
   };
 }
 
@@ -127,6 +128,7 @@ function loadSave(): { state: GameState; offlineEarnings: number; gift: number; 
       state: {
         ...parsed,
         trees,
+        inventory: parsed.inventory ?? {},
         leaves: parsed.leaves + earnings + gift,
         totalEarned: parsed.totalEarned + earnings + gift,
         lastTick: now,
@@ -207,14 +209,25 @@ export function useGarden() {
     };
   }, []);
 
+  /** Plants a tree. A free copy in inventory (won from a case) is used first —
+   *  and bypasses the species' normal unlock requirement, same as winning it
+   *  did — otherwise it's bought normally at the usual scaling cost. */
   const plantTree = useCallback((plotIndex: number, speciesId: string) => {
     setGame((prev) => {
       if (prev.trees[plotIndex]) return prev;
       const species = SPECIES_MAP[speciesId];
-      if (!species || prev.totalEarned < species.unlockAt) return prev;
-      const owned = prev.trees.filter((t) => t?.speciesId === speciesId).length;
-      const cost = nextCost(species.cost, owned);
-      if (prev.leaves < cost) return prev;
+      if (!species) return prev;
+      const free = prev.inventory[speciesId] ?? 0;
+      let cost = 0;
+      let inventory = prev.inventory;
+      if (free > 0) {
+        inventory = { ...prev.inventory, [speciesId]: free - 1 };
+      } else {
+        if (prev.totalEarned < species.unlockAt) return prev;
+        const owned = prev.trees.filter((t) => t?.speciesId === speciesId).length;
+        cost = nextCost(species.cost, owned);
+        if (prev.leaves < cost) return prev;
+      }
       const trees = [...prev.trees];
       trees[plotIndex] = {
         id: crypto.randomUUID(),
@@ -225,34 +238,25 @@ export function useGarden() {
         fertilizeUntil: 0,
         boostLevel: 0,
       };
-      return { ...prev, leaves: prev.leaves - cost, trees };
+      return { ...prev, leaves: prev.leaves - cost, trees, inventory };
     });
   }, []);
 
-  /** Opens a case: rolls a random species (independent of that species' normal
-   *  unlock requirement — that's the appeal of a lucky pull) and plants it
-   *  straight into the first empty plot. Needs an empty plot to succeed. */
-  const openCase = useCallback((caseId: string): { speciesName: string } | null => {
+  /** Opens a case: rolls a random species (independent of that species'
+   *  normal unlock requirement — that's the appeal of a lucky pull) and
+   *  banks it in the inventory as a free tree, ready to plant whenever a
+   *  plot opens up. */
+  const openCase = useCallback((caseId: string): { speciesId: string; speciesName: string } | null => {
     const current = gameRef.current;
     const caseDef = CASE_MAP[caseId];
     if (!caseDef || current.leaves < caseDef.cost) return null;
-    const emptyIndex = current.trees.findIndex((t) => !t);
-    if (emptyIndex === -1) return null;
     const species = rollCaseSpecies(caseDef);
-    setGame((prev) => {
-      const trees = [...prev.trees];
-      trees[emptyIndex] = {
-        id: crypto.randomUUID(),
-        speciesId: species.id,
-        plantedAt: Date.now(),
-        invested: 0,
-        waterUntil: 0,
-        fertilizeUntil: 0,
-        boostLevel: 0,
-      };
-      return { ...prev, leaves: prev.leaves - caseDef.cost, trees };
-    });
-    return { speciesName: species.name };
+    setGame((prev) => ({
+      ...prev,
+      leaves: prev.leaves - caseDef.cost,
+      inventory: { ...prev.inventory, [species.id]: (prev.inventory[species.id] ?? 0) + 1 },
+    }));
+    return { speciesId: species.id, speciesName: species.name };
   }, []);
 
   const buyPlot = useCallback(() => {

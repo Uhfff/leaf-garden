@@ -1,33 +1,57 @@
-import { useState } from 'react';
-import { CASES, dropChance } from '../data/cases';
+import { useRef, useState } from 'react';
+import { CASES, dropChance, rollCaseSpecies } from '../data/cases';
 import { SPECIES_MAP } from '../data/species';
 import { formatLeaves } from '../game/economy';
+import type { TreeSpecies } from '../types';
 import { TreeSprite } from './TreeSprite';
 
 interface Props {
   leaves: number;
-  hasEmptyPlot: boolean;
-  onOpen: (caseId: string) => { speciesName: string } | null;
+  onOpen: (caseId: string) => { speciesId: string; speciesName: string } | null;
   onClose: () => void;
 }
 
-export function CaseModal({ leaves, hasEmptyPlot, onOpen, onClose }: Props) {
+const REEL_LENGTH = 32;
+const ITEM_WIDTH = 72;
+const VIEWPORT_WIDTH = 320;
+const SPIN_MS = 3400;
+
+function buildReel(caseId: string, winner: TreeSpecies): TreeSpecies[] {
+  const caseDef = CASES.find((c) => c.id === caseId)!;
+  const reel: TreeSpecies[] = [];
+  for (let i = 0; i < REEL_LENGTH - 1; i++) reel.push(rollCaseSpecies(caseDef));
+  reel.push(winner);
+  return reel;
+}
+
+const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - ((REEL_LENGTH - 1) * ITEM_WIDTH + ITEM_WIDTH / 2);
+
+export function CaseModal({ leaves, onOpen, onClose }: Props) {
   const caseDef = CASES[0];
-  const [revealing, setRevealing] = useState(false);
-  const [won, setWon] = useState<string | null>(null);
+  const [reel, setReel] = useState<TreeSpecies[] | null>(null);
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const canAfford = leaves >= caseDef.cost;
-  const canOpen = canAfford && hasEmptyPlot && !revealing;
+  const canOpen = canAfford && !spinning;
 
   const handleOpen = () => {
     if (!canOpen) return;
-    setRevealing(true);
-    setWon(null);
-    setTimeout(() => {
-      const result = onOpen(caseDef.id);
-      setRevealing(false);
-      setWon(result ? result.speciesName : null);
-    }, 700);
+    const outcome = onOpen(caseDef.id);
+    if (!outcome) return;
+    const winner = SPECIES_MAP[outcome.speciesId];
+    setResult(null);
+    setSpinning(false);
+    setReel(buildReel(caseDef.id, winner));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setSpinning(true));
+    });
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setSpinning(false);
+      setResult(outcome.speciesName);
+    }, SPIN_MS);
   };
 
   return (
@@ -38,16 +62,36 @@ export function CaseModal({ leaves, hasEmptyPlot, onOpen, onClose }: Props) {
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
 
-        <div className={`case-box ${revealing ? 'case-shaking' : ''}`}>
-          <span className="case-box-icon">{caseDef.icon}</span>
+        <div className="case-reel-viewport" style={{ width: VIEWPORT_WIDTH }}>
+          <div className="case-reel-pointer" />
+          {reel ? (
+            <div
+              className="case-reel-strip"
+              style={{
+                transform: `translateX(${spinning ? LANDING_OFFSET : 0}px)`,
+                transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.12, 0.67, 0.22, 1)` : 'none',
+              }}
+            >
+              {reel.map((species, i) => (
+                <div
+                  key={i}
+                  className={`case-reel-item ${!spinning && i === reel.length - 1 && result ? 'case-reel-winner' : ''}`}
+                  style={{ width: ITEM_WIDTH }}
+                >
+                  <TreeSprite species={species} stage={3} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="case-box-icon">{caseDef.icon}</div>
+          )}
         </div>
 
-        {won && !revealing && <p className="case-result">Выпало: <strong>{won}</strong>! 🎉</p>}
+        {result && <p className="case-result">Выпало: <strong>{result}</strong>! Дерево в инвентаре — посадите бесплатно. 🎉</p>}
         {!canAfford && <p className="case-warning">Не хватает листьев — нужно {formatLeaves(caseDef.cost)} 🍃</p>}
-        {canAfford && !hasEmptyPlot && <p className="case-warning">Нет свободных участков для нового дерева</p>}
 
         <button className="case-open-btn" disabled={!canOpen} onClick={handleOpen}>
-          {revealing ? 'Открываем…' : `Открыть за ${formatLeaves(caseDef.cost)} 🍃`}
+          {spinning ? 'Крутим…' : `Открыть за ${formatLeaves(caseDef.cost)} 🍃`}
         </button>
 
         <div className="case-drops">
