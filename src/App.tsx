@@ -13,6 +13,7 @@ export default function App() {
     game,
     incomePerSec,
     offlineEarnings,
+    gift,
     plantTree,
     buyPlot,
     removeTrees,
@@ -29,7 +30,11 @@ export default function App() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [boostQuantity, setBoostQuantity] = useState<BoostQuantity>(1);
   const [toast, setToast] = useState<string | null>(
-    offlineEarnings > 1 ? `Пока вас не было, сад принёс ${formatLeaves(offlineEarnings)} 🍃` : null,
+    gift > 0
+      ? `Вам подарили ${formatLeaves(gift)} 🍃!`
+      : offlineEarnings > 1
+        ? `Пока вас не было, сад принёс ${formatLeaves(offlineEarnings)} 🍃`
+        : null,
   );
 
   useEffect(() => {

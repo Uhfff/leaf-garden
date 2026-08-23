@@ -57,9 +57,33 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
   return total;
 }
 
-function loadSave(): { state: GameState; offlineEarnings: number } {
+const GIFT_MAX = 1e15;
+
+/** A `?gift=N` link adds N leaves to whoever opens it — a way to send a
+ *  friend (or yourself, on another device) a pile of leaves without any
+ *  server, since saves are purely local to each browser. */
+function readGiftFromUrl(): number {
+  if (typeof window === 'undefined') return 0;
+  const raw = new URLSearchParams(window.location.search).get('gift');
+  if (!raw) return 0;
+  const value = Math.floor(Number(raw));
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  return Math.min(value, GIFT_MAX);
+}
+
+function clearGiftFromUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('gift');
+  window.history.replaceState({}, '', url.toString());
+}
+
+function loadSave(): { state: GameState; offlineEarnings: number; gift: number } {
   const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-  if (!raw) return { state: freshState(), offlineEarnings: 0 };
+  const gift = readGiftFromUrl();
+  if (!raw) {
+    const state = freshState();
+    return { state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift }, offlineEarnings: 0, gift };
+  }
   try {
     const parsed = JSON.parse(raw) as GameState;
     const trees = parsed.trees.map(normalizeTree);
@@ -70,14 +94,16 @@ function loadSave(): { state: GameState; offlineEarnings: number } {
       state: {
         ...parsed,
         trees,
-        leaves: parsed.leaves + earnings,
-        totalEarned: parsed.totalEarned + earnings,
+        leaves: parsed.leaves + earnings + gift,
+        totalEarned: parsed.totalEarned + earnings + gift,
         lastTick: now,
       },
       offlineEarnings: earnings,
+      gift,
     };
   } catch {
-    return { state: freshState(), offlineEarnings: 0 };
+    const state = freshState();
+    return { state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift }, offlineEarnings: 0, gift };
   }
 }
 
@@ -89,9 +115,14 @@ export function useGarden() {
   const initial = useRef(loadSave());
   const [game, setGame] = useState(initial.current.state);
   const [offlineEarnings] = useState(initial.current.offlineEarnings);
+  const [gift] = useState(initial.current.gift);
   const [incomePerSec, setIncomePerSec] = useState(0);
   const gameRef = useRef(game);
   gameRef.current = game;
+
+  useEffect(() => {
+    if (gift > 0) clearGiftFromUrl();
+  }, [gift]);
 
   useEffect(() => {
     const tick = () => {
@@ -302,6 +333,7 @@ export function useGarden() {
     game,
     incomePerSec,
     offlineEarnings,
+    gift,
     plantTree,
     buyPlot,
     removeTrees,
