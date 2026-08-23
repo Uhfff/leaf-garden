@@ -259,6 +259,22 @@ export function useGarden() {
     return { speciesId: species.id, speciesName: species.name };
   }, []);
 
+  /** Sells one free (case-won) tree straight out of inventory for that
+   *  species' base cost, without ever planting it. Returns the payout. */
+  const sellInventoryTree = useCallback((speciesId: string): number | null => {
+    const current = gameRef.current;
+    const have = current.inventory[speciesId] ?? 0;
+    const species = SPECIES_MAP[speciesId];
+    if (have <= 0 || !species) return null;
+    const payout = species.cost;
+    setGame((prev) => ({
+      ...prev,
+      leaves: prev.leaves + payout,
+      inventory: { ...prev.inventory, [speciesId]: (prev.inventory[speciesId] ?? 0) - 1 },
+    }));
+    return payout;
+  }, []);
+
   const buyPlot = useCallback(() => {
     setGame((prev) => {
       if (prev.plots >= MAX_PLOTS) return prev;
@@ -411,6 +427,7 @@ export function useGarden() {
     gift,
     plantTree,
     openCase,
+    sellInventoryTree,
     buyPlot,
     removeTrees,
     applyUpgrade,

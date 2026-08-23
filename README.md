@@ -14,11 +14,15 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   cheap ones but able to land any of the eight, including species you
   haven't unlocked the normal way yet. Odds are shown up front, and opening
   one spins a scrolling reel (built from the same weighted roll, so what
-  you see spin past is honest) that lands on the real result. The won tree
-  goes to your inventory rather than straight into the ground — plant it
-  whenever a plot is free, for free (the planting picker shows a "free"
-  price and how many you're holding). Since nothing was spent on the tree
-  itself, removing it later refunds nothing.
+  spins past is honest) that lands on the real result — as plain color
+  swatches, not full tree art, since animating ~24 detailed SVGs at once is
+  what "spinning" actually costs and it visibly smeared before the switch.
+  Landing reveals the full tree art and a choice: sell it on the spot for
+  its normal purchase price, or bank it. A banked tree goes to an inventory
+  by species rather than straight into the ground; the planting picker
+  shows a "free" price and how many you're holding when inventory covers
+  a species. Since nothing was spent on the tree itself, removing a
+  case-won tree later refunds nothing either way.
 - **Income scales with age.** Every planted tree's income follows
   `base * (1 + growthRate * sqrt(age))` — always increasing, but with
   diminishing returns, so there's no single "best" tree to spam forever.

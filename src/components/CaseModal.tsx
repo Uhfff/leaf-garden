@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { CASES, dropChance, rollCaseSpecies } from '../data/cases';
 import { SPECIES_MAP } from '../data/species';
 import { formatLeaves } from '../game/economy';
@@ -8,13 +8,14 @@ import { TreeSprite } from './TreeSprite';
 interface Props {
   leaves: number;
   onOpen: (caseId: string) => { speciesId: string; speciesName: string } | null;
+  onSell: (speciesId: string) => number | null;
   onClose: () => void;
 }
 
-const REEL_LENGTH = 32;
-const ITEM_WIDTH = 72;
+const REEL_LENGTH = 24;
+const ITEM_WIDTH = 64;
 const VIEWPORT_WIDTH = 320;
-const SPIN_MS = 3400;
+const SPIN_MS = 3000;
 
 function buildReel(caseId: string, winner: TreeSpecies): TreeSpecies[] {
   const caseDef = CASES.find((c) => c.id === caseId)!;
@@ -26,22 +27,42 @@ function buildReel(caseId: string, winner: TreeSpecies): TreeSpecies[] {
 
 const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - ((REEL_LENGTH - 1) * ITEM_WIDTH + ITEM_WIDTH / 2);
 
-export function CaseModal({ leaves, onOpen, onClose }: Props) {
+/** A plain color swatch instead of the full detailed TreeSprite — the reel
+ *  moves ~24 of these at once, and a full multi-shape SVG per slot was too
+ *  much for the browser to rasterize while animating (looked like a smear
+ *  instead of trees). The real TreeSprite reappears once it lands. */
+function ReelSwatch({ species }: { species: TreeSpecies }) {
+  return (
+    <div
+      className="case-reel-swatch"
+      style={{ background: `linear-gradient(135deg, ${species.foliage[0]}, ${species.foliage[1]})` }}
+    />
+  );
+}
+
+export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
   const caseDef = CASES[0];
   const [reel, setReel] = useState<TreeSpecies[] | null>(null);
   const [spinning, setSpinning] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [won, setWon] = useState<TreeSpecies | null>(null);
+  const [sold, setSold] = useState<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const canAfford = leaves >= caseDef.cost;
-  const canOpen = canAfford && !spinning;
+  const canOpen = canAfford && !spinning && !won;
+
+  const sortedDrops = useMemo(
+    () => caseDef.drops.slice().sort((a, b) => dropChance(caseDef, b.speciesId) - dropChance(caseDef, a.speciesId)),
+    [caseDef],
+  );
 
   const handleOpen = () => {
     if (!canOpen) return;
     const outcome = onOpen(caseDef.id);
     if (!outcome) return;
     const winner = SPECIES_MAP[outcome.speciesId];
-    setResult(null);
+    setWon(null);
+    setSold(null);
     setSpinning(false);
     setReel(buildReel(caseDef.id, winner));
     requestAnimationFrame(() => {
@@ -50,8 +71,21 @@ export function CaseModal({ leaves, onOpen, onClose }: Props) {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setSpinning(false);
-      setResult(outcome.speciesName);
+      setWon(winner);
     }, SPIN_MS);
+  };
+
+  const handleSell = () => {
+    if (!won) return;
+    const payout = onSell(won.id);
+    if (payout !== null) setSold(payout);
+    setWon(null);
+    setReel(null);
+  };
+
+  const handleKeep = () => {
+    setWon(null);
+    setReel(null);
   };
 
   return (
@@ -73,12 +107,8 @@ export function CaseModal({ leaves, onOpen, onClose }: Props) {
               }}
             >
               {reel.map((species, i) => (
-                <div
-                  key={i}
-                  className={`case-reel-item ${!spinning && i === reel.length - 1 && result ? 'case-reel-winner' : ''}`}
-                  style={{ width: ITEM_WIDTH }}
-                >
-                  <TreeSprite species={species} stage={3} />
+                <div key={i} className="case-reel-item" style={{ width: ITEM_WIDTH }}>
+                  <ReelSwatch species={species} />
                 </div>
               ))}
             </div>
@@ -87,30 +117,45 @@ export function CaseModal({ leaves, onOpen, onClose }: Props) {
           )}
         </div>
 
-        {result && <p className="case-result">Выпало: <strong>{result}</strong>! Дерево в инвентаре — посадите бесплатно. 🎉</p>}
-        {!canAfford && <p className="case-warning">Не хватает листьев — нужно {formatLeaves(caseDef.cost)} 🍃</p>}
+        {won && !spinning && !sold && (
+          <div className="case-reveal">
+            <div className="case-reveal-icon">
+              <TreeSprite species={won} stage={3} />
+            </div>
+            <p className="case-result">Выпало: <strong>{won.name}</strong>! 🎉</p>
+            <div className="case-reveal-buttons">
+              <button className="toolbar-secondary" onClick={handleSell}>
+                Продать за {formatLeaves(won.cost)} 🍃
+              </button>
+              <button className="toolbar-primary" onClick={handleKeep}>
+                Оставить в инвентаре
+              </button>
+            </div>
+          </div>
+        )}
+        {sold !== null && <p className="case-result">Продано за {formatLeaves(sold)} 🍃</p>}
+        {!canAfford && !won && <p className="case-warning">Не хватает листьев — нужно {formatLeaves(caseDef.cost)} 🍃</p>}
 
-        <button className="case-open-btn" disabled={!canOpen} onClick={handleOpen}>
-          {spinning ? 'Крутим…' : `Открыть за ${formatLeaves(caseDef.cost)} 🍃`}
-        </button>
+        {!won && (
+          <button className="case-open-btn" disabled={!canOpen} onClick={handleOpen}>
+            {spinning ? 'Крутим…' : `Открыть за ${formatLeaves(caseDef.cost)} 🍃`}
+          </button>
+        )}
 
         <div className="case-drops">
           <span className="case-drops-title">Шансы выпадения</span>
-          {caseDef.drops
-            .slice()
-            .sort((a, b) => dropChance(caseDef, b.speciesId) - dropChance(caseDef, a.speciesId))
-            .map((drop) => {
-              const species = SPECIES_MAP[drop.speciesId];
-              return (
-                <div key={drop.speciesId} className="case-drop-row">
-                  <span className="case-drop-icon">
-                    <TreeSprite species={species} stage={3} />
-                  </span>
-                  <span className="case-drop-name">{species.name}</span>
-                  <span className="case-drop-chance">{dropChance(caseDef, drop.speciesId).toFixed(1)}%</span>
-                </div>
-              );
-            })}
+          {sortedDrops.map((drop) => {
+            const species = SPECIES_MAP[drop.speciesId];
+            return (
+              <div key={drop.speciesId} className="case-drop-row">
+                <span className="case-drop-icon">
+                  <TreeSprite species={species} stage={3} />
+                </span>
+                <span className="case-drop-name">{species.name}</span>
+                <span className="case-drop-chance">{dropChance(caseDef, drop.speciesId).toFixed(1)}%</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

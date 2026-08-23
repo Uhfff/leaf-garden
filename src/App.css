@@ -664,23 +664,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 8px;
 }
 
-.case-reel-item .tree-sprite {
-  width: 80%;
-  height: 80%;
-}
-
-.case-reel-item .tree-sway {
-  animation: none;
-}
-
-.case-reel-winner {
-  filter: drop-shadow(0 0 10px var(--boost));
+.case-reel-swatch {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 10px -3px rgba(255, 255, 255, 0.25);
 }
 
 .case-box-icon {
   font-size: 44px;
+}
+
+.case-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.case-reveal-icon {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 0 14px var(--boost));
+}
+
+.case-reveal-icon .tree-sway {
+  animation: none;
+}
+
+.case-reveal-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.case-reveal-buttons button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .case-result {

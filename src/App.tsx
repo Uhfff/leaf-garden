@@ -17,6 +17,7 @@ export default function App() {
     gift,
     plantTree,
     openCase,
+    sellInventoryTree,
     buyPlot,
     removeTrees,
     applyUpgrade,
@@ -142,7 +143,12 @@ export default function App() {
         />
       )}
       {caseModalOpen && (
-        <CaseModal leaves={game.leaves} onOpen={openCase} onClose={() => setCaseModalOpen(false)} />
+        <CaseModal
+          leaves={game.leaves}
+          onOpen={openCase}
+          onSell={sellInventoryTree}
+          onClose={() => setCaseModalOpen(false)}
+        />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>
