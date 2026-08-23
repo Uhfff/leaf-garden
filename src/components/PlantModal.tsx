@@ -1,6 +1,7 @@
 import { SPECIES } from '../data/species';
 import type { PlantedTree } from '../types';
 import { formatLeaves, nextCost } from '../game/economy';
+import { TreeSprite } from './TreeSprite';
 
 interface Props {
   leaves: number;
@@ -31,7 +32,9 @@ export function PlantModal({ leaves, totalEarned, trees, onPick, onClose }: Prop
                 disabled={locked || !affordable}
                 onClick={() => onPick(species.id)}
               >
-                <div className="species-swatch" style={{ background: `linear-gradient(135deg, ${species.foliage[0]}, ${species.foliage[1]})` }} />
+                <div className="species-swatch">
+                  <TreeSprite species={species} stage={3} />
+                </div>
                 <div className="species-body">
                   <div className="species-title-row">
                     <span className="species-name">{species.name}</span>

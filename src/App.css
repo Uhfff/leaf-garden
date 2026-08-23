@@ -536,11 +536,26 @@
 }
 
 .species-swatch {
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  box-shadow: 0 0 16px -4px rgba(255, 255, 255, 0.3);
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border);
+  box-shadow: 0 0 16px -4px rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.species-swatch .tree-sprite {
+  width: 90%;
+  height: 90%;
+}
+
+.species-swatch .tree-sway {
+  animation: none;
 }
 
 .species-body {
