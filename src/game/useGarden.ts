@@ -69,14 +69,25 @@ const USED_VOUCHERS_KEY = 'leaf-garden-used-vouchers';
  *  server, since saves are purely local to each browser. The raw string is
  *  also the voucher's identity: once redeemed in a browser, that exact code
  *  won't pay out again there, so re-opening a saved/bookmarked link is a
- *  no-op instead of free leaves every time. */
+ *  no-op instead of free leaves every time.
+ *
+ *  `?gift=` also accepts a named promo code (e.g. from the bot's chat
+ *  reply) instead of a raw number — resolved through the same promo table
+ *  and filed under the same `promo:` key the in-game code-entry modal uses,
+ *  so redeeming a code via the bot link and via typing it in-game are the
+ *  same redemption, not two. */
 function readVoucherFromUrl(): { code: string; amount: number } | null {
   if (typeof window === 'undefined') return null;
-  const code = new URLSearchParams(window.location.search).get('gift');
-  if (!code) return null;
-  const value = Math.floor(Number(code));
-  if (!Number.isFinite(value) || value <= 0) return null;
-  return { code, amount: Math.min(value, GIFT_MAX) };
+  const raw = new URLSearchParams(window.location.search).get('gift');
+  if (!raw) return null;
+  if (/^\d+$/.test(raw.trim())) {
+    const value = Math.floor(Number(raw));
+    if (!Number.isFinite(value) || value <= 0) return null;
+    return { code: raw, amount: Math.min(value, GIFT_MAX) };
+  }
+  const promo = findPromoCode(raw);
+  if (!promo) return null;
+  return { code: `promo:${normalizePromoCode(raw)}`, amount: promo.amount };
 }
 
 function isVoucherUsed(code: string): boolean {
