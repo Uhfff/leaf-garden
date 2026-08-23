@@ -20,7 +20,7 @@ const SAVE_INTERVAL_MS = 5000;
 const OFFLINE_CAP_MS = 12 * 60 * 60 * 1000;
 
 export const START_PLOTS = 6;
-export const MAX_PLOTS = 15;
+export const MAX_PLOTS = 30;
 export const PLOT_BASE_COST = 200;
 export const PLOT_SCALE = 1.8;
 
