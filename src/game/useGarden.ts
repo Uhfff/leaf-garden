@@ -22,7 +22,7 @@ const OFFLINE_CAP_MS = 12 * 60 * 60 * 1000;
 export const START_PLOTS = 6;
 export const MAX_PLOTS = 30;
 export const PLOT_BASE_COST = 200;
-export const PLOT_SCALE = 1.8;
+export const PLOT_SCALE = 2.2;
 
 function freshState(): GameState {
   return {
@@ -111,7 +111,7 @@ export function useGarden() {
       setIncomePerSec(rate);
     };
     tick();
-    const id = setInterval(tick, 200);
+    const id = setInterval(tick, 500);
     return () => clearInterval(id);
   }, []);
 

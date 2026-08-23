@@ -17,9 +17,8 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   timestamp, not from a running clock, so the exact income earned while the
   tab was closed is computed with a closed-form integral on reload — no
   tick-by-tick simulation, no drift, no reward for leaving multiple tabs open.
-- **Garden plots.** Start with 6, expand up to 30, each new one costing 1.8x
-  the last (200 leaves for the first, into the hundreds of millions by the
-  last).
+- **Garden plots.** Start with 6, expand up to 30, each new one costing 2.2x
+  the last (200 leaves for the first, into the billions by the last).
 - **Upgrades.** Watering and fertilizing are temporary income buffs (30 min
   and 1 hour) that expire on their own — reapplying one before it expires
   just pays the cost again and refreshes the timer to full. While picking

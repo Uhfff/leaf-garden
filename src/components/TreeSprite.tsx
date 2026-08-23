@@ -1,15 +1,15 @@
+import { memo } from 'react';
 import type { TreeSpecies } from '../types';
-import { growthStage } from '../game/economy';
+import type { GrowthStage } from '../game/economy';
 
 interface Props {
   species: TreeSpecies;
-  ageSeconds: number;
+  stage: GrowthStage;
 }
 
 const SCALE_BY_STAGE = [0.45, 0.65, 0.85, 1];
 
-export function TreeSprite({ species, ageSeconds }: Props) {
-  const stage = growthStage(ageSeconds);
+function TreeSpriteImpl({ species, stage }: Props) {
   const scale = SCALE_BY_STAGE[stage];
   const [c1, c2] = species.foliage;
 
@@ -47,3 +47,8 @@ export function TreeSprite({ species, ageSeconds }: Props) {
     </svg>
   );
 }
+
+// Stage only changes a few times over a tree's whole lifetime (age crosses one
+// of 3 thresholds), unlike age itself which changes every tick — memoizing on
+// (species, stage) means the SVG shapes are essentially never rebuilt.
+export const TreeSprite = memo(TreeSpriteImpl);

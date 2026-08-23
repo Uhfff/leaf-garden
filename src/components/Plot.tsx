@@ -64,7 +64,7 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
       onClick={selectMode ? onToggleSelect : undefined}
     >
       <LeafParticles />
-      <TreeSprite species={species} ageSeconds={ageSeconds} />
+      <TreeSprite species={species} stage={stage} />
       <div className="plot-info">
         <span className="plot-name">{species.name}</span>
         <span className="plot-rate">+{formatLeaves(rate)}/с</span>

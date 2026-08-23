@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 interface Particle {
   id: number;
@@ -10,7 +10,7 @@ interface Particle {
 
 const EMOJIS = ['🍃', '🍂'];
 
-export function LeafParticles() {
+function LeafParticlesImpl() {
   const [particles, setParticles] = useState<Particle[]>([]);
   const counter = useRef(0);
 
@@ -52,3 +52,7 @@ export function LeafParticles() {
     </div>
   );
 }
+
+// No props, so this only ever needs to render once per mount — memoizing
+// keeps the parent Plot's per-tick re-render from touching it at all.
+export const LeafParticles = memo(LeafParticlesImpl);
