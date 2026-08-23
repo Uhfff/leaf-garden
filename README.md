@@ -10,21 +10,29 @@ centuries-old oak becomes a real source of income. The currency is leaves.
 - **Eight tree species** (Birch → Maple → Oak → Willow → Sakura → Spruce →
   Baobab → Sequoia), each with a different cost, base income, and growth
   rate. Rarer species unlock as your lifetime earnings grow.
-- **Cases.** A 2,000-leaf case gives a random species — weighted toward the
-  cheap ones but able to land any of the eight, including species you
-  haven't unlocked the normal way yet. Odds are shown up front, and opening
-  one spins a scrolling reel (drawn from that same weighted roll, ending in
-  the real result) that decelerates into place. The reel is positioned with
-  `left: 0` inside its clipped viewport rather than flex-centered — a
-  centered flex item wider than its container shifts by however much it
-  overflows, which silently broke every distance the spin was calculated
-  to travel and left most of the reel's trees permanently off-screen.
-  Landing reveals the full tree art and a choice: sell it on the spot for
-  its normal purchase price, or bank it. A banked tree goes to an inventory
-  by species rather than straight into the ground; the planting picker
-  shows a "free" price and how many you're holding when inventory covers
-  a species. Since nothing was spent on the tree itself, removing a
-  case-won tree later refunds nothing either way.
+- **Two cases**, picked from a toolbar submenu. The 2,000-leaf **common
+  case** rolls any of the eight regular species, steeply weighted toward
+  the cheap ones (a 50%/24%/12%/6%/4%/2.5%/1.2%/0.3% spread — the top prize
+  is a genuine long shot, not a modest one). The 100-billion-leaf
+  **exclusive case** rolls either one of 4 top regular species as a
+  consolation prize or one of 5 **seasonal species that are never sold in
+  the regular planting picker at any price** — the only way to ever own an
+  Ice Birch, Frost Pine, Golden Maple, Crystal Willow, or Phoenix Tree.
+  Both share the same mechanics: odds shown up front, opening spins a
+  scrolling reel (drawn from that same weighted roll, ending in the real
+  result, with a few more items rolled past it so the strip doesn't dead-end
+  exactly at the pointer) that decelerates into place. The reel is
+  positioned with `left: 0` inside its clipped viewport rather than
+  flex-centered — a centered flex item wider than its container shifts by
+  however much it overflows, which silently broke every distance the spin
+  was calculated to travel and left most of the reel's trees permanently
+  off-screen. Landing reveals the full tree art and a choice: sell it on
+  the spot for its normal purchase price, or bank it. A banked tree goes to
+  an inventory by species rather than straight into the ground; the
+  planting picker shows a "free" price and how many you're holding when
+  inventory covers a species (and, for seasonal species, only shows them
+  at all once inventory does). Since nothing was spent on the tree itself,
+  removing a case-won tree later refunds nothing either way.
 - **Income scales with age.** Every planted tree's income follows
   `base * (1 + growthRate * sqrt(age))` — always increasing, but with
   diminishing returns, so there's no single "best" tree to spam forever.
@@ -69,7 +77,10 @@ colors, growth stage), not image assets.
 ```
 src/
   types.ts            Domain types: TreeSpecies, PlantedTree, GameState
-  data/species.ts      The eight tree species and their stats
+  data/species.ts      The eight regular tree species and their stats
+  data/seasonalSpecies.ts  The five exclusive-case-only species
+  data/allSpecies.ts    Combined species lookup used by game logic (regular
+                         shop code deliberately keeps using species.ts alone)
   data/cases.ts         Case definitions and the weighted species roll
   data/promoCodes.ts     Promo code → leaf amount table
   game/economy.ts       Pure math: income rate, the closed-form earnings

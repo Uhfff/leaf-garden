@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { UPGRADES, formatDuration, formatLeaves, pluralTrees, type BoostQuantity, type UpgradeType } from '../game/economy';
+import { CASES } from '../data/cases';
 
 export type ActionType = UpgradeType | 'delete';
 
@@ -20,7 +21,7 @@ interface Props {
   onRequestDeleteConfirm: () => void;
   onConfirmDelete: () => void;
   onCancel: () => void;
-  onOpenCase: () => void;
+  onOpenCase: (caseId: string) => void;
   onOpenPromo: () => void;
 }
 
@@ -43,6 +44,7 @@ export function SelectionToolbar({
   onOpenPromo,
 }: Props) {
   const [carePickerOpen, setCarePickerOpen] = useState(false);
+  const [casePickerOpen, setCasePickerOpen] = useState(false);
 
   if (!action) {
     if (carePickerOpen) {
@@ -67,6 +69,28 @@ export function SelectionToolbar({
         </div>
       );
     }
+    if (casePickerOpen) {
+      return (
+        <div className="toolbar-icons">
+          <button className="toolbar-icon-btn" title="Назад" onClick={() => setCasePickerOpen(false)}>
+            ←
+          </button>
+          {CASES.map((c) => (
+            <button
+              key={c.id}
+              className="toolbar-icon-btn"
+              title={c.name}
+              onClick={() => {
+                setCasePickerOpen(false);
+                onOpenCase(c.id);
+              }}
+            >
+              {c.icon}
+            </button>
+          ))}
+        </div>
+      );
+    }
     return (
       <div className="toolbar-icons">
         <button className="toolbar-icon-btn" title="Уход за деревом (полить/удобрить/улучшить)" onClick={() => setCarePickerOpen(true)}>
@@ -75,7 +99,7 @@ export function SelectionToolbar({
         <button className="toolbar-icon-btn" title="Удалить деревья" onClick={() => onStart('delete')}>
           🗑
         </button>
-        <button className="toolbar-icon-btn" title="Кейсы" onClick={onOpenCase}>
+        <button className="toolbar-icon-btn" title="Кейсы" onClick={() => setCasePickerOpen(true)}>
           🎁
         </button>
         <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>

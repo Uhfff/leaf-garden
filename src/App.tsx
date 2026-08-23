@@ -30,7 +30,7 @@ export default function App() {
   } = useGarden();
   const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
-  const [caseModalOpen, setCaseModalOpen] = useState(false);
+  const [caseModalId, setCaseModalId] = useState<string | null>(null);
   const [promoModalOpen, setPromoModalOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -115,7 +115,7 @@ export default function App() {
             onRequestDeleteConfirm={() => setConfirmingDelete(true)}
             onConfirmDelete={confirmDelete}
             onCancel={exitSelection}
-            onOpenCase={() => setCaseModalOpen(true)}
+            onOpenCase={(caseId) => setCaseModalId(caseId)}
             onOpenPromo={() => setPromoModalOpen(true)}
           />
         </div>
@@ -146,12 +146,13 @@ export default function App() {
           onClose={() => setOpenPlot(null)}
         />
       )}
-      {caseModalOpen && (
+      {caseModalId && (
         <CaseModal
+          caseId={caseModalId}
           leaves={game.leaves}
           onOpen={openCase}
           onSell={sellInventoryTree}
-          onClose={() => setCaseModalOpen(false)}
+          onClose={() => setCaseModalId(null)}
         />
       )}
       {promoModalOpen && (

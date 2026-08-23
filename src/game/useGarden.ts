@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
-import { SPECIES_MAP } from '../data/species';
+import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { CASE_MAP, rollCaseSpecies } from '../data/cases';
 import { findPromoCode, normalizePromoCode } from '../data/promoCodes';
 import {
@@ -43,7 +43,7 @@ function normalizeTree(tree: PlantedTree | null): PlantedTree | null {
   if (!tree) return null;
   return {
     ...tree,
-    invested: tree.invested ?? SPECIES_MAP[tree.speciesId]?.cost ?? 0,
+    invested: tree.invested ?? ALL_SPECIES_MAP[tree.speciesId]?.cost ?? 0,
     waterUntil: tree.waterUntil ?? 0,
     fertilizeUntil: tree.fertilizeUntil ?? 0,
     boostLevel: tree.boostLevel ?? 0,
@@ -54,7 +54,7 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
   let total = 0;
   for (const tree of trees) {
     if (!tree) continue;
-    const species = SPECIES_MAP[tree.speciesId];
+    const species = ALL_SPECIES_MAP[tree.speciesId];
     if (!species) continue;
     total += earningsForTree(species, tree, fromMs, toMs);
   }
@@ -193,7 +193,7 @@ export function useGarden() {
       });
       const rate = gameRef.current.trees.reduce((sum, tree) => {
         if (!tree) return sum;
-        const species = SPECIES_MAP[tree.speciesId];
+        const species = ALL_SPECIES_MAP[tree.speciesId];
         if (!species) return sum;
         return sum + incomeRate(species, (now - tree.plantedAt) / 1000, treeMultiplierAt(tree, now));
       }, 0);
@@ -229,7 +229,7 @@ export function useGarden() {
   const plantTree = useCallback((plotIndex: number, speciesId: string) => {
     setGame((prev) => {
       if (prev.trees[plotIndex]) return prev;
-      const species = SPECIES_MAP[speciesId];
+      const species = ALL_SPECIES_MAP[speciesId];
       if (!species) return prev;
       const free = prev.inventory[speciesId] ?? 0;
       let cost = 0;
@@ -278,7 +278,7 @@ export function useGarden() {
   const sellInventoryTree = useCallback((speciesId: string): number | null => {
     const current = gameRef.current;
     const have = current.inventory[speciesId] ?? 0;
-    const species = SPECIES_MAP[speciesId];
+    const species = ALL_SPECIES_MAP[speciesId];
     if (have <= 0 || !species) return null;
     const payout = species.cost;
     setGame((prev) => ({
@@ -340,7 +340,7 @@ export function useGarden() {
     if (targets.length === 0) return false;
     const costs = targets.map((i) => {
       const tree = current.trees[i]!;
-      const species = SPECIES_MAP[tree.speciesId];
+      const species = ALL_SPECIES_MAP[tree.speciesId];
       return upgradeCost(type, species, tree.boostLevel);
     });
     const total = costs.reduce((a, b) => a + b, 0);
@@ -369,7 +369,7 @@ export function useGarden() {
     return plotIndices.reduce((sum, i) => {
       const tree = current.trees[i];
       if (!tree) return sum;
-      const species = SPECIES_MAP[tree.speciesId];
+      const species = ALL_SPECIES_MAP[tree.speciesId];
       return sum + upgradeCost(type, species, tree.boostLevel);
     }, 0);
   }, []);
@@ -387,7 +387,7 @@ export function useGarden() {
       if (targets.length === 0) return null;
       const entries = targets.map((i) => {
         const tree = current.trees[i]!;
-        return { species: SPECIES_MAP[tree.speciesId], level: tree.boostLevel };
+        return { species: ALL_SPECIES_MAP[tree.speciesId], level: tree.boostLevel };
       });
 
       if (quantity === 'max') {
@@ -432,7 +432,7 @@ export function useGarden() {
     const targets = plotIndices.filter((i) => current.trees[i]);
     const entries = targets.map((i) => {
       const tree = current.trees[i]!;
-      return { species: SPECIES_MAP[tree.speciesId], level: tree.boostLevel };
+      return { species: ALL_SPECIES_MAP[tree.speciesId], level: tree.boostLevel };
     });
     if (quantity === 'max') {
       const { levels, totalCost } = maxBoostAllocation(entries, current.leaves);

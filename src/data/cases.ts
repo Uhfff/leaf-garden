@@ -1,5 +1,5 @@
 import type { TreeSpecies } from '../types';
-import { SPECIES_MAP } from './species';
+import { ALL_SPECIES_MAP } from './allSpecies';
 
 export interface CaseDrop {
   speciesId: string;
@@ -20,15 +20,37 @@ export const CASES: CaseDef[] = [
     name: 'Обычный кейс',
     icon: '🎁',
     cost: 2000,
+    // Steep, casino-style drop-off: common species are very common, the
+    // top prize is a genuine long shot instead of a modest 1-in-150 chance.
     drops: [
-      { speciesId: 'birch', weight: 35 },
-      { speciesId: 'maple', weight: 25 },
-      { speciesId: 'oak', weight: 18 },
-      { speciesId: 'willow', weight: 10 },
-      { speciesId: 'sakura', weight: 6 },
-      { speciesId: 'spruce', weight: 3.5 },
-      { speciesId: 'baobab', weight: 1.8 },
-      { speciesId: 'sequoia', weight: 0.7 },
+      { speciesId: 'birch', weight: 50 },
+      { speciesId: 'maple', weight: 24 },
+      { speciesId: 'oak', weight: 12 },
+      { speciesId: 'willow', weight: 6 },
+      { speciesId: 'sakura', weight: 4 },
+      { speciesId: 'spruce', weight: 2.5 },
+      { speciesId: 'baobab', weight: 1.2 },
+      { speciesId: 'sequoia', weight: 0.3 },
+    ],
+  },
+  {
+    id: 'exclusive',
+    name: 'Эксклюзивный кейс',
+    icon: '❄️',
+    cost: 100_000_000_000,
+    // 4 top-tier regular species as "consolation" prizes, plus all 5
+    // seasonal species that can *only* come from this case — never sold
+    // in the regular planting picker at any price.
+    drops: [
+      { speciesId: 'sakura', weight: 30 },
+      { speciesId: 'spruce', weight: 22 },
+      { speciesId: 'baobab', weight: 15 },
+      { speciesId: 'sequoia', weight: 10 },
+      { speciesId: 'ice_birch', weight: 12 },
+      { speciesId: 'frost_pine', weight: 6 },
+      { speciesId: 'golden_maple', weight: 3 },
+      { speciesId: 'crystal_willow', weight: 1.5 },
+      { speciesId: 'phoenix_tree', weight: 0.5 },
     ],
   },
 ];
@@ -47,8 +69,8 @@ export function rollCaseSpecies(caseDef: CaseDef): TreeSpecies {
   const total = caseDef.drops.reduce((sum, d) => sum + d.weight, 0);
   let r = Math.random() * total;
   for (const drop of caseDef.drops) {
-    if (r < drop.weight) return SPECIES_MAP[drop.speciesId];
+    if (r < drop.weight) return ALL_SPECIES_MAP[drop.speciesId];
     r -= drop.weight;
   }
-  return SPECIES_MAP[caseDef.drops[caseDef.drops.length - 1].speciesId];
+  return ALL_SPECIES_MAP[caseDef.drops[caseDef.drops.length - 1].speciesId];
 }

@@ -1,4 +1,5 @@
 import { SPECIES } from '../data/species';
+import { SEASONAL_SPECIES } from '../data/seasonalSpecies';
 import type { PlantedTree } from '../types';
 import { formatLeaves, nextCost } from '../game/economy';
 import { TreeSprite } from './TreeSprite';
@@ -13,6 +14,11 @@ interface Props {
 }
 
 export function PlantModal({ leaves, totalEarned, trees, inventory, onPick, onClose }: Props) {
+  // Seasonal trees are exclusive-case-only — they never appear here for
+  // purchase, only once you've actually won one and have it banked free.
+  const ownedSeasonal = SEASONAL_SPECIES.filter((s) => (inventory[s.id] ?? 0) > 0);
+  const displaySpecies = [...SPECIES, ...ownedSeasonal];
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -21,7 +27,7 @@ export function PlantModal({ leaves, totalEarned, trees, inventory, onPick, onCl
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
         <div className="species-list">
-          {SPECIES.map((species) => {
+          {displaySpecies.map((species) => {
             const free = inventory[species.id] ?? 0;
             const owned = trees.filter((t) => t?.speciesId === species.id).length;
             const cost = free > 0 ? 0 : nextCost(species.cost, owned);

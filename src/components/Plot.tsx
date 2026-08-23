@@ -1,5 +1,5 @@
 import type { PlantedTree } from '../types';
-import { SPECIES_MAP } from '../data/species';
+import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplierAt, UPGRADES, MAX_BOOST_LEVEL } from '../game/economy';
 import type { ActionType } from './SelectionToolbar';
 import { TreeSprite } from './TreeSprite';
@@ -26,7 +26,7 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
     );
   }
 
-  const species = SPECIES_MAP[tree.speciesId];
+  const species = ALL_SPECIES_MAP[tree.speciesId];
   const ageSeconds = (now - tree.plantedAt) / 1000;
   const rate = incomeRate(species, ageSeconds, treeMultiplierAt(tree, now));
   const stage = growthStage(ageSeconds);

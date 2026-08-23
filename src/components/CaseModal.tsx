@@ -1,11 +1,12 @@
 import { useMemo, useRef, useState } from 'react';
-import { CASES, dropChance, rollCaseSpecies } from '../data/cases';
-import { SPECIES_MAP } from '../data/species';
+import { CASE_MAP, dropChance, rollCaseSpecies, type CaseDef } from '../data/cases';
+import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { formatLeaves } from '../game/economy';
 import type { TreeSpecies } from '../types';
 import { TreeSprite } from './TreeSprite';
 
 interface Props {
+  caseId: string;
   leaves: number;
   onOpen: (caseId: string) => { speciesId: string; speciesName: string } | null;
   onSell: (speciesId: string) => number | null;
@@ -13,32 +14,38 @@ interface Props {
 }
 
 const REEL_LENGTH = 22;
+// How many extra items keep going past the winner, so the reel doesn't end
+// exactly at the pointer — without these the strip has nothing left to
+// show right of center once it lands, just bare viewport background.
+const TRAILING_ITEMS = 5;
+const WINNER_INDEX = REEL_LENGTH - 1 - TRAILING_ITEMS;
 const ITEM_WIDTH = 72;
 const VIEWPORT_WIDTH = 320;
 const SPIN_MS = 3200;
 
 /** Every tree the reel scrolls past — ending in the real, already-decided
- *  winner — is drawn from the same weighted roll as the actual result, so
- *  nothing about what flies past is staged. */
-function buildReel(caseId: string, winner: TreeSpecies): TreeSpecies[] {
-  const caseDef = CASES.find((c) => c.id === caseId)!;
+ *  winner, with a few more rolled after it — is drawn from the same
+ *  weighted roll as the actual result, so nothing about what flies past is
+ *  staged. */
+function buildReel(caseDef: CaseDef, winner: TreeSpecies): TreeSpecies[] {
   const reel: TreeSpecies[] = [];
-  for (let i = 0; i < REEL_LENGTH - 1; i++) reel.push(rollCaseSpecies(caseDef));
+  for (let i = 0; i < WINNER_INDEX; i++) reel.push(rollCaseSpecies(caseDef));
   reel.push(winner);
+  for (let i = 0; i < TRAILING_ITEMS; i++) reel.push(rollCaseSpecies(caseDef));
   return reel;
 }
 
-// Distance to translate the strip so the last item's center lands under the
-// pointer at the viewport's midpoint. The strip itself must start flush at
-// the viewport's left edge (position: absolute; left: 0) for this to line
-// up — centering it with flexbox instead silently shifts the whole strip
-// by however much it overflows, which is what broke this the first time:
-// the translated strip ended up mostly off-screen, showing empty space
-// instead of trees.
-const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - ((REEL_LENGTH - 1) * ITEM_WIDTH + ITEM_WIDTH / 2);
+// Distance to translate the strip so the winner's item (not necessarily the
+// last one — see TRAILING_ITEMS) lands centered under the pointer. The
+// strip itself must start flush at the viewport's left edge
+// (position: absolute; left: 0) for this to line up — centering it with
+// flexbox instead silently shifts the whole strip by however much it
+// overflows, which is what broke this the first time: the translated strip
+// ended up mostly off-screen, showing empty space instead of trees.
+const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - (WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2);
 
-export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
-  const caseDef = CASES[0];
+export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
+  const caseDef = CASE_MAP[caseId];
   const [reel, setReel] = useState<TreeSpecies[] | null>(null);
   const [moved, setMoved] = useState(false);
   const [won, setWon] = useState<TreeSpecies | null>(null);
@@ -58,12 +65,12 @@ export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
     if (!canOpen) return;
     const outcome = onOpen(caseDef.id);
     if (!outcome) return;
-    const winner = SPECIES_MAP[outcome.speciesId];
+    const winner = ALL_SPECIES_MAP[outcome.speciesId];
 
     setWon(null);
     setSold(null);
     setMoved(false);
-    setReel(buildReel(caseDef.id, winner));
+    setReel(buildReel(caseDef, winner));
 
     // A brief timeout instead of requestAnimationFrame — the strip needs to
     // actually paint at rest (transform: none) for one frame before the
@@ -146,7 +153,7 @@ export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
         <div className="case-drops">
           <span className="case-drops-title">Шансы выпадения</span>
           {sortedDrops.map((drop) => {
-            const species = SPECIES_MAP[drop.speciesId];
+            const species = ALL_SPECIES_MAP[drop.speciesId];
             return (
               <div key={drop.speciesId} className="case-drop-row">
                 <span className="case-drop-icon">
