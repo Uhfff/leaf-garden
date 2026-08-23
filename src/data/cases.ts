@@ -57,20 +57,41 @@ export const CASES: CaseDef[] = [
 
 export const CASE_MAP: Record<string, CaseDef> = Object.fromEntries(CASES.map((c) => [c.id, c]));
 
-export function dropChance(caseDef: CaseDef, speciesId: string): number {
-  const total = caseDef.drops.reduce((sum, d) => sum + d.weight, 0);
-  const drop = caseDef.drops.find((d) => d.speciesId === speciesId);
+export const LUCK_BOOST_PERCENT = 35;
+
+/** A luck boost makes every drop *except* the single most common one
+ *  `LUCK_BOOST_PERCENT`% more likely, funded by that most-common entry's
+ *  relative share shrinking as the total grows — so it's a real shift
+ *  toward rarer prizes, not a no-op uniform scale-up. */
+function effectiveDrops(caseDef: CaseDef, boosted: boolean): CaseDrop[] {
+  if (!boosted) return caseDef.drops;
+  const maxWeight = Math.max(...caseDef.drops.map((d) => d.weight));
+  let usedBump = false;
+  return caseDef.drops.map((d) => {
+    if (!usedBump && d.weight === maxWeight) {
+      usedBump = true;
+      return d;
+    }
+    return { ...d, weight: d.weight * (1 + LUCK_BOOST_PERCENT / 100) };
+  });
+}
+
+export function dropChance(caseDef: CaseDef, speciesId: string, boosted = false): number {
+  const drops = effectiveDrops(caseDef, boosted);
+  const total = drops.reduce((sum, d) => sum + d.weight, 0);
+  const drop = drops.find((d) => d.speciesId === speciesId);
   return drop ? (drop.weight / total) * 100 : 0;
 }
 
 /** A tree's species doesn't need to be unlocked to drop from a case —
  *  landing a rare species early is the whole point of opening one. */
-export function rollCaseSpecies(caseDef: CaseDef): TreeSpecies {
-  const total = caseDef.drops.reduce((sum, d) => sum + d.weight, 0);
+export function rollCaseSpecies(caseDef: CaseDef, boosted = false): TreeSpecies {
+  const drops = effectiveDrops(caseDef, boosted);
+  const total = drops.reduce((sum, d) => sum + d.weight, 0);
   let r = Math.random() * total;
-  for (const drop of caseDef.drops) {
+  for (const drop of drops) {
     if (r < drop.weight) return ALL_SPECIES_MAP[drop.speciesId];
     r -= drop.weight;
   }
-  return ALL_SPECIES_MAP[caseDef.drops[caseDef.drops.length - 1].speciesId];
+  return ALL_SPECIES_MAP[drops[drops.length - 1].speciesId];
 }

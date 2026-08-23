@@ -1,13 +1,15 @@
 import { useMemo, useRef, useState } from 'react';
 import { CASE_MAP, dropChance, rollCaseSpecies, type CaseDef } from '../data/cases';
 import { ALL_SPECIES_MAP } from '../data/allSpecies';
-import { formatLeaves } from '../game/economy';
+import { formatDuration, formatLeaves } from '../game/economy';
 import type { TreeSpecies } from '../types';
 import { TreeSprite } from './TreeSprite';
 
 interface Props {
   caseId: string;
   leaves: number;
+  luckBoostUntil: number;
+  freeCharges: number;
   onOpen: (caseId: string) => { speciesId: string; speciesName: string } | null;
   onSell: (speciesId: string) => number | null;
   onClose: () => void;
@@ -27,11 +29,11 @@ const SPIN_MS = 3200;
  *  winner, with a few more rolled after it — is drawn from the same
  *  weighted roll as the actual result, so nothing about what flies past is
  *  staged. */
-function buildReel(caseDef: CaseDef, winner: TreeSpecies): TreeSpecies[] {
+function buildReel(caseDef: CaseDef, winner: TreeSpecies, boosted: boolean): TreeSpecies[] {
   const reel: TreeSpecies[] = [];
-  for (let i = 0; i < WINNER_INDEX; i++) reel.push(rollCaseSpecies(caseDef));
+  for (let i = 0; i < WINNER_INDEX; i++) reel.push(rollCaseSpecies(caseDef, boosted));
   reel.push(winner);
-  for (let i = 0; i < TRAILING_ITEMS; i++) reel.push(rollCaseSpecies(caseDef));
+  for (let i = 0; i < TRAILING_ITEMS; i++) reel.push(rollCaseSpecies(caseDef, boosted));
   return reel;
 }
 
@@ -44,7 +46,7 @@ function buildReel(caseDef: CaseDef, winner: TreeSpecies): TreeSpecies[] {
 // ended up mostly off-screen, showing empty space instead of trees.
 const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - (WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2);
 
-export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
+export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen, onSell, onClose }: Props) {
   const caseDef = CASE_MAP[caseId];
   const [reel, setReel] = useState<TreeSpecies[] | null>(null);
   const [moved, setMoved] = useState(false);
@@ -52,13 +54,17 @@ export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
   const [sold, setSold] = useState<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const boosted = luckBoostUntil > Date.now();
   const spinning = reel !== null && !won;
-  const canAfford = leaves >= caseDef.cost;
+  const canAfford = freeCharges > 0 || leaves >= caseDef.cost;
   const canOpen = canAfford && !spinning;
 
   const sortedDrops = useMemo(
-    () => caseDef.drops.slice().sort((a, b) => dropChance(caseDef, b.speciesId) - dropChance(caseDef, a.speciesId)),
-    [caseDef],
+    () =>
+      caseDef.drops
+        .slice()
+        .sort((a, b) => dropChance(caseDef, b.speciesId, boosted) - dropChance(caseDef, a.speciesId, boosted)),
+    [caseDef, boosted],
   );
 
   const handleOpen = () => {
@@ -70,7 +76,7 @@ export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
     setWon(null);
     setSold(null);
     setMoved(false);
-    setReel(buildReel(caseDef, winner));
+    setReel(buildReel(caseDef, winner, boosted));
 
     // A brief timeout instead of requestAnimationFrame — the strip needs to
     // actually paint at rest (transform: none) for one frame before the
@@ -104,6 +110,15 @@ export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
           <h2>{caseDef.icon} {caseDef.name}</h2>
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
+
+        {boosted && (
+          <p className="case-luck-banner">
+            🍀 Удача +35% на редкие деревья ещё {formatDuration((luckBoostUntil - Date.now()) / 1000)}
+          </p>
+        )}
+        {freeCharges > 0 && (
+          <p className="case-luck-banner">🎫 Бесплатных открытий: {freeCharges}</p>
+        )}
 
         <div className="case-reel-viewport" style={{ width: VIEWPORT_WIDTH }}>
           {reel ? (
@@ -146,7 +161,11 @@ export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
 
         {!won && (
           <button className="case-open-btn" disabled={!canOpen} onClick={handleOpen}>
-            {spinning ? 'Крутим…' : `Открыть за ${formatLeaves(caseDef.cost)} 🍃`}
+            {spinning
+              ? 'Крутим…'
+              : freeCharges > 0
+                ? 'Открыть бесплатно'
+                : `Открыть за ${formatLeaves(caseDef.cost)} 🍃`}
           </button>
         )}
 
@@ -160,7 +179,7 @@ export function CaseModal({ caseId, leaves, onOpen, onSell, onClose }: Props) {
                   <TreeSprite species={species} stage={3} />
                 </span>
                 <span className="case-drop-name">{species.name}</span>
-                <span className="case-drop-chance">{dropChance(caseDef, drop.speciesId).toFixed(1)}%</span>
+                <span className="case-drop-chance">{dropChance(caseDef, drop.speciesId, boosted).toFixed(1)}%</span>
               </div>
             );
           })}

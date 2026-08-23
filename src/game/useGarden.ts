@@ -2,10 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
 import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { CASE_MAP, rollCaseSpecies } from '../data/cases';
-import { findPromoCode, normalizePromoCode } from '../data/promoCodes';
+import { findPromoCode, normalizePromoCode, type PromoEffect } from '../data/promoCodes';
 import {
   costForLevels,
   earningsForTree,
+  formatLeaves,
   incomeRate,
   levelsWithinCap,
   maxBoostAllocation,
@@ -35,6 +36,8 @@ function freshState(): GameState {
     trees: Array(START_PLOTS).fill(null),
     lastTick: Date.now(),
     inventory: {},
+    luckBoostUntil: 0,
+    freeCaseCharges: {},
   };
 }
 
@@ -64,7 +67,36 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
 const GIFT_MAX = 1e15;
 const USED_VOUCHERS_KEY = 'leaf-garden-used-vouchers';
 
-/** A `?gift=N` link adds N leaves to whoever opens it — a way to send a
+/** Applies any promo effect to a GameState — shared by the `?gift=` link
+ *  path and the in-game code-entry modal, so a code pays out identically
+ *  no matter which way it's redeemed. */
+function applyPromoEffect(state: GameState, effect: PromoEffect): GameState {
+  if (effect.type === 'leaves') {
+    return { ...state, leaves: state.leaves + effect.amount, totalEarned: state.totalEarned + effect.amount };
+  }
+  if (effect.type === 'luckBoost') {
+    return { ...state, luckBoostUntil: Math.max(state.luckBoostUntil, Date.now() + effect.durationMs) };
+  }
+  return {
+    ...state,
+    freeCaseCharges: {
+      ...state.freeCaseCharges,
+      [effect.caseId]: (state.freeCaseCharges[effect.caseId] ?? 0) + effect.count,
+    },
+  };
+}
+
+function describePromoEffect(effect: PromoEffect): string {
+  if (effect.type === 'leaves') return `Начислено ${formatLeaves(effect.amount)} 🍃`;
+  if (effect.type === 'luckBoost') {
+    const days = Math.round(effect.durationMs / (24 * 60 * 60 * 1000));
+    return `Удача на редкие деревья +${effect.percent}% активна на ${days} дн.!`;
+  }
+  const caseName = CASE_MAP[effect.caseId]?.name ?? effect.caseId;
+  return `Начислено ${effect.count} бесплатных открытий: ${caseName}`;
+}
+
+/** A `?gift=N` link applies N leaves to whoever opens it — a way to send a
  *  friend (or yourself, on another device) a pile of leaves without any
  *  server, since saves are purely local to each browser. The raw string is
  *  also the voucher's identity: once redeemed in a browser, that exact code
@@ -72,22 +104,22 @@ const USED_VOUCHERS_KEY = 'leaf-garden-used-vouchers';
  *  no-op instead of free leaves every time.
  *
  *  `?gift=` also accepts a named promo code (e.g. from the bot's chat
- *  reply) instead of a raw number — resolved through the same promo table
- *  and filed under the same `promo:` key the in-game code-entry modal uses,
- *  so redeeming a code via the bot link and via typing it in-game are the
- *  same redemption, not two. */
-function readVoucherFromUrl(): { code: string; amount: number } | null {
+ *  reply) instead of a raw number, for any promo effect — resolved through
+ *  the same promo table and filed under the same `promo:` key the in-game
+ *  code-entry modal uses, so redeeming a code via the bot link and via
+ *  typing it in-game are the same redemption, not two. */
+function readVoucherFromUrl(): { code: string; effect: PromoEffect } | null {
   if (typeof window === 'undefined') return null;
   const raw = new URLSearchParams(window.location.search).get('gift');
   if (!raw) return null;
   if (/^\d+$/.test(raw.trim())) {
     const value = Math.floor(Number(raw));
     if (!Number.isFinite(value) || value <= 0) return null;
-    return { code: raw, amount: Math.min(value, GIFT_MAX) };
+    return { code: raw, effect: { type: 'leaves', amount: Math.min(value, GIFT_MAX) } };
   }
   const promo = findPromoCode(raw);
   if (!promo) return null;
-  return { code: `promo:${normalizePromoCode(raw)}`, amount: promo.amount };
+  return { code: `promo:${normalizePromoCode(raw)}`, effect: promo.effect };
 }
 
 function isVoucherUsed(code: string): boolean {
@@ -116,19 +148,22 @@ function clearGiftFromUrl() {
   window.history.replaceState({}, '', url.toString());
 }
 
-function loadSave(): { state: GameState; offlineEarnings: number; gift: number; giftCode: string | null } {
+function loadSave(): {
+  state: GameState;
+  offlineEarnings: number;
+  giftMessage: string | null;
+  giftCode: string | null;
+} {
   const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
   const voucher = readVoucherFromUrl();
-  const gift = voucher && !isVoucherUsed(voucher.code) ? voucher.amount : 0;
   const giftCode = voucher ? voucher.code : null;
+  const applyGift = !!voucher && !isVoucherUsed(voucher.code);
+  const giftMessage = applyGift ? describePromoEffect(voucher!.effect) : null;
+  const finalize = (state: GameState): GameState =>
+    applyGift ? applyPromoEffect(state, voucher!.effect) : state;
+
   if (!raw) {
-    const state = freshState();
-    return {
-      state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift },
-      offlineEarnings: 0,
-      gift,
-      giftCode,
-    };
+    return { state: finalize(freshState()), offlineEarnings: 0, giftMessage, giftCode };
   }
   try {
     const parsed = JSON.parse(raw) as GameState;
@@ -136,31 +171,23 @@ function loadSave(): { state: GameState; offlineEarnings: number; gift: number; 
     const now = Date.now();
     const from = Math.max(parsed.lastTick, now - OFFLINE_CAP_MS);
     const earnings = earnForTrees(trees, from, now);
-    return {
-      state: {
-        ...parsed,
-        trees,
-        inventory: parsed.inventory ?? {},
-        leaves: parsed.leaves + earnings + gift,
-        totalEarned: parsed.totalEarned + earnings + gift,
-        lastTick: now,
-      },
-      offlineEarnings: earnings,
-      gift,
-      giftCode,
+    const state: GameState = {
+      ...parsed,
+      trees,
+      inventory: parsed.inventory ?? {},
+      luckBoostUntil: parsed.luckBoostUntil ?? 0,
+      freeCaseCharges: parsed.freeCaseCharges ?? {},
+      leaves: parsed.leaves + earnings,
+      totalEarned: parsed.totalEarned + earnings,
+      lastTick: now,
     };
+    return { state: finalize(state), offlineEarnings: earnings, giftMessage, giftCode };
   } catch {
-    const state = freshState();
-    return {
-      state: { ...state, leaves: state.leaves + gift, totalEarned: state.totalEarned + gift },
-      offlineEarnings: 0,
-      gift,
-      giftCode,
-    };
+    return { state: finalize(freshState()), offlineEarnings: 0, giftMessage, giftCode };
   }
 }
 
-export type PromoRedeemResult = { ok: true; amount: number } | { ok: false; reason: 'used' | 'invalid' };
+export type PromoRedeemResult = { ok: true; message: string } | { ok: false; reason: 'used' | 'invalid' };
 
 export function plotCost(currentPlots: number): number {
   return nextCost(PLOT_BASE_COST, currentPlots - START_PLOTS, PLOT_SCALE);
@@ -170,7 +197,7 @@ export function useGarden() {
   const initial = useRef(loadSave());
   const [game, setGame] = useState(initial.current.state);
   const [offlineEarnings] = useState(initial.current.offlineEarnings);
-  const [gift] = useState(initial.current.gift);
+  const [giftMessage] = useState(initial.current.giftMessage);
   const [giftCode] = useState(initial.current.giftCode);
   const [incomePerSec, setIncomePerSec] = useState(0);
   const gameRef = useRef(game);
@@ -178,9 +205,9 @@ export function useGarden() {
 
   useEffect(() => {
     if (!giftCode) return;
-    if (gift > 0) markVoucherUsed(giftCode);
+    if (giftMessage) markVoucherUsed(giftCode);
     clearGiftFromUrl();
-  }, [gift, giftCode]);
+  }, [giftMessage, giftCode]);
 
   useEffect(() => {
     const tick = () => {
@@ -259,15 +286,24 @@ export function useGarden() {
   /** Opens a case: rolls a random species (independent of that species'
    *  normal unlock requirement — that's the appeal of a lucky pull) and
    *  banks it in the inventory as a free tree, ready to plant whenever a
-   *  plot opens up. */
+   *  plot opens up. A banked free-case charge is spent before leaves are
+   *  ever charged, and an active luck boost applies to the actual roll —
+   *  not just the odds display — so it isn't just cosmetic. */
   const openCase = useCallback((caseId: string): { speciesId: string; speciesName: string } | null => {
     const current = gameRef.current;
     const caseDef = CASE_MAP[caseId];
-    if (!caseDef || current.leaves < caseDef.cost) return null;
-    const species = rollCaseSpecies(caseDef);
+    if (!caseDef) return null;
+    const freeAvailable = current.freeCaseCharges[caseId] ?? 0;
+    const usingFree = freeAvailable > 0;
+    if (!usingFree && current.leaves < caseDef.cost) return null;
+    const boosted = current.luckBoostUntil > Date.now();
+    const species = rollCaseSpecies(caseDef, boosted);
     setGame((prev) => ({
       ...prev,
-      leaves: prev.leaves - caseDef.cost,
+      leaves: usingFree ? prev.leaves : prev.leaves - caseDef.cost,
+      freeCaseCharges: usingFree
+        ? { ...prev.freeCaseCharges, [caseId]: (prev.freeCaseCharges[caseId] ?? 0) - 1 }
+        : prev.freeCaseCharges,
       inventory: { ...prev.inventory, [species.id]: (prev.inventory[species.id] ?? 0) + 1 },
     }));
     return { speciesId: species.id, speciesName: species.name };
@@ -298,12 +334,8 @@ export function useGarden() {
     const key = `promo:${normalizePromoCode(rawCode)}`;
     if (isVoucherUsed(key)) return { ok: false, reason: 'used' };
     markVoucherUsed(key);
-    setGame((prev) => ({
-      ...prev,
-      leaves: prev.leaves + promo.amount,
-      totalEarned: prev.totalEarned + promo.amount,
-    }));
-    return { ok: true, amount: promo.amount };
+    setGame((prev) => applyPromoEffect(prev, promo.effect));
+    return { ok: true, message: describePromoEffect(promo.effect) };
   }, []);
 
   const buyPlot = useCallback(() => {
@@ -455,7 +487,7 @@ export function useGarden() {
     game,
     incomePerSec,
     offlineEarnings,
-    gift,
+    giftMessage,
     plantTree,
     openCase,
     sellInventoryTree,

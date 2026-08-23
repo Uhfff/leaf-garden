@@ -15,7 +15,7 @@ export default function App() {
     game,
     incomePerSec,
     offlineEarnings,
-    gift,
+    giftMessage,
     plantTree,
     openCase,
     sellInventoryTree,
@@ -37,8 +37,8 @@ export default function App() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [boostQuantity, setBoostQuantity] = useState<BoostQuantity>(1);
   const [toast, setToast] = useState<string | null>(
-    gift > 0
-      ? `Вам подарили ${formatLeaves(gift)} 🍃!`
+    giftMessage
+      ? `🎁 ${giftMessage}`
       : offlineEarnings > 1
         ? `Пока вас не было, сад принёс ${formatLeaves(offlineEarnings)} 🍃`
         : null,
@@ -150,6 +150,8 @@ export default function App() {
         <CaseModal
           caseId={caseModalId}
           leaves={game.leaves}
+          luckBoostUntil={game.luckBoostUntil}
+          freeCharges={game.freeCaseCharges[caseModalId] ?? 0}
           onOpen={openCase}
           onSell={sellInventoryTree}
           onClose={() => setCaseModalId(null)}

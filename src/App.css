@@ -764,6 +764,14 @@
   margin: 0 0 10px;
 }
 
+.case-luck-banner {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--leaf);
+  margin: 0 0 8px;
+}
+
 .case-open-btn {
   display: block;
   width: 100%;

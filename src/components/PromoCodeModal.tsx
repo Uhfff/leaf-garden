@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { formatLeaves } from '../game/economy';
 import type { PromoRedeemResult } from '../game/useGarden';
 
 interface Props {
@@ -40,7 +39,7 @@ export function PromoCodeModal({ onRedeem, onClose }: Props) {
             Применить
           </button>
         </form>
-        {result?.ok && <p className="case-result">Готово! Начислено {formatLeaves(result.amount)} 🍃</p>}
+        {result?.ok && <p className="case-result">Готово! {result.message}</p>}
         {result && !result.ok && result.reason === 'used' && (
           <p className="case-warning">Этот код уже был использован на этом устройстве</p>
         )}

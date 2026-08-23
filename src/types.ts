@@ -30,4 +30,8 @@ export interface GameState {
   lastTick: number;
   /** Free trees won from cases, banked by species until planted. */
   inventory: Record<string, number>;
+  /** Epoch ms until which case rolls are luck-boosted; 0 or past = inactive. */
+  luckBoostUntil: number;
+  /** Free case opens banked by case id, spent before leaves are charged. */
+  freeCaseCharges: Record<string, number>;
 }

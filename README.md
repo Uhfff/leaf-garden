@@ -57,9 +57,15 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   is integrated piecewise around its expiry timestamp, not just approximated.
 - **Removing a tree refunds half of what you put into it** — purchase price
   plus every upgrade bought since — so experimenting isn't a dead loss.
-- **Promo codes.** A code redeemed in-game credits a fixed amount once per
+- **Promo codes.** A code redeemed in-game applies its effect once per
   browser, using the same used-code ledger as gift links (just under a
   `promo:` prefix so the two can't collide). Matching is case-insensitive.
+  Effects aren't limited to a flat leaf amount — a code can also grant a
+  temporary luck boost (`luck35`: +35% weight on every non-top drop in a
+  case for 2 days, stacking with the reel and odds display alike) or free
+  case openings (`newcases`: 50 free pulls on the common case, tracked as
+  per-case charges that get spent before any leaves are, and reflected in
+  the case modal's "Открыть бесплатно" button).
 - **Local-only.** Progress is saved to `localStorage`. No backend, no
   accounts.
 - **Playable as a Telegram Mini App.** Loads the Telegram Web App SDK and,
