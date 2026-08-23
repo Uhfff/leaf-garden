@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CASES, dropChance, rollCaseSpecies } from '../data/cases';
 import { SPECIES_MAP } from '../data/species';
 import { formatLeaves } from '../game/economy';
@@ -12,44 +12,47 @@ interface Props {
   onClose: () => void;
 }
 
-const REEL_LENGTH = 24;
-const ITEM_WIDTH = 64;
-const VIEWPORT_WIDTH = 320;
-const SPIN_MS = 3000;
+const SEQUENCE_LENGTH = 18;
 
-function buildReel(caseId: string, winner: TreeSpecies): TreeSpecies[] {
+/** The whole sequence — every species the flicker will show, ending in the
+ *  real, already-decided winner — is drawn up front from the same weighted
+ *  roll as the actual result, so nothing about the reveal is staged. */
+function buildSequence(caseId: string, winner: TreeSpecies): TreeSpecies[] {
   const caseDef = CASES.find((c) => c.id === caseId)!;
-  const reel: TreeSpecies[] = [];
-  for (let i = 0; i < REEL_LENGTH - 1; i++) reel.push(rollCaseSpecies(caseDef));
-  reel.push(winner);
-  return reel;
+  const sequence: TreeSpecies[] = [];
+  for (let i = 0; i < SEQUENCE_LENGTH - 1; i++) sequence.push(rollCaseSpecies(caseDef));
+  sequence.push(winner);
+  return sequence;
 }
 
-const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - ((REEL_LENGTH - 1) * ITEM_WIDTH + ITEM_WIDTH / 2);
-
-/** A plain color swatch instead of the full detailed TreeSprite — the reel
- *  moves ~24 of these at once, and a full multi-shape SVG per slot was too
- *  much for the browser to rasterize while animating (looked like a smear
- *  instead of trees). The real TreeSprite reappears once it lands. */
-function ReelSwatch({ species }: { species: TreeSpecies }) {
-  return (
-    <div
-      className="case-reel-swatch"
-      style={{ background: `linear-gradient(135deg, ${species.foliage[0]}, ${species.foliage[1]})` }}
-    />
-  );
+/** Per-step delay, speeding up→slowing down like a real spin, without ever
+ *  animating position — only one tree is ever on screen at a time, so
+ *  there's nothing for the browser to smear while "spinning". */
+function buildDelays(count: number): number[] {
+  const delays: number[] = [];
+  let d = 55;
+  for (let i = 0; i < count; i++) {
+    delays.push(Math.round(d));
+    d = Math.min(d * 1.14, 230);
+  }
+  return delays;
 }
 
 export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
   const caseDef = CASES[0];
-  const [reel, setReel] = useState<TreeSpecies[] | null>(null);
-  const [spinning, setSpinning] = useState(false);
+  const [sequence, setSequence] = useState<TreeSpecies[] | null>(null);
+  const [spinIndex, setSpinIndex] = useState<number | null>(null);
   const [won, setWon] = useState<TreeSpecies | null>(null);
   const [sold, setSold] = useState<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, []);
+
+  const spinning = sequence !== null && !won;
   const canAfford = leaves >= caseDef.cost;
-  const canOpen = canAfford && !spinning && !won;
+  const canOpen = canAfford && !spinning;
 
   const sortedDrops = useMemo(
     () => caseDef.drops.slice().sort((a, b) => dropChance(caseDef, b.speciesId) - dropChance(caseDef, a.speciesId)),
@@ -61,18 +64,27 @@ export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
     const outcome = onOpen(caseDef.id);
     if (!outcome) return;
     const winner = SPECIES_MAP[outcome.speciesId];
+    const seq = buildSequence(caseDef.id, winner);
+    const delays = buildDelays(seq.length);
+
     setWon(null);
     setSold(null);
-    setSpinning(false);
-    setReel(buildReel(caseDef.id, winner));
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setSpinning(true));
-    });
+    setSequence(seq);
+    setSpinIndex(0);
+
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setSpinning(false);
-      setWon(winner);
-    }, SPIN_MS);
+    let i = 0;
+    const step = () => {
+      i++;
+      if (i >= seq.length) {
+        setSpinIndex(seq.length - 1);
+        setWon(winner);
+        return;
+      }
+      setSpinIndex(i);
+      timeoutRef.current = setTimeout(step, delays[i]);
+    };
+    timeoutRef.current = setTimeout(step, delays[0]);
   };
 
   const handleSell = () => {
@@ -80,13 +92,15 @@ export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
     const payout = onSell(won.id);
     if (payout !== null) setSold(payout);
     setWon(null);
-    setReel(null);
+    setSequence(null);
   };
 
   const handleKeep = () => {
     setWon(null);
-    setReel(null);
+    setSequence(null);
   };
+
+  const displayed = won ?? (sequence && spinIndex !== null ? sequence[spinIndex] : null);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -96,32 +110,18 @@ export function CaseModal({ leaves, onOpen, onSell, onClose }: Props) {
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
 
-        <div className="case-reel-viewport" style={{ width: VIEWPORT_WIDTH }}>
-          <div className="case-reel-pointer" />
-          {reel ? (
-            <div
-              className="case-reel-strip"
-              style={{
-                transform: `translateX(${spinning ? LANDING_OFFSET : 0}px)`,
-                transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.12, 0.67, 0.22, 1)` : 'none',
-              }}
-            >
-              {reel.map((species, i) => (
-                <div key={i} className="case-reel-item" style={{ width: ITEM_WIDTH }}>
-                  <ReelSwatch species={species} />
-                </div>
-              ))}
+        <div className="case-spin-box">
+          {displayed ? (
+            <div key={spinIndex ?? 'won'} className={`case-spin-icon ${won ? 'case-spin-icon-won' : ''}`}>
+              <TreeSprite species={displayed} stage={3} />
             </div>
           ) : (
-            <div className="case-box-icon">{caseDef.icon}</div>
+            <span className="case-box-icon">{caseDef.icon}</span>
           )}
         </div>
 
-        {won && !spinning && !sold && (
+        {won && (
           <div className="case-reveal">
-            <div className="case-reveal-icon">
-              <TreeSprite species={won} stage={3} />
-            </div>
             <p className="case-result">Выпало: <strong>{won.name}</strong>! 🎉</p>
             <div className="case-reveal-buttons">
               <button className="toolbar-secondary" onClick={handleSell}>

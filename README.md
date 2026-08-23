@@ -13,10 +13,11 @@ centuries-old oak becomes a real source of income. The currency is leaves.
 - **Cases.** A 2,000-leaf case gives a random species — weighted toward the
   cheap ones but able to land any of the eight, including species you
   haven't unlocked the normal way yet. Odds are shown up front, and opening
-  one spins a scrolling reel (built from the same weighted roll, so what
-  spins past is honest) that lands on the real result — as plain color
-  swatches, not full tree art, since animating ~24 detailed SVGs at once is
-  what "spinning" actually costs and it visibly smeared before the switch.
+  one flickers through a sequence of species (drawn from that same weighted
+  roll, ending in the real result) at a slowing pace before landing — one
+  tree on screen at a time, its content swapped rather than animated across
+  the screen, since moving a whole strip of detailed SVGs at once was too
+  much for some browsers to paint smoothly and it came out as a smear.
   Landing reveals the full tree art and a choice: sell it on the spot for
   its normal purchase price, or bank it. A banked tree goes to an inventory
   by species rather than straight into the ground; the planting picker
