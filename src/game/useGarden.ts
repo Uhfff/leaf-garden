@@ -2,14 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState, PlantedTree } from '../types';
 import { SPECIES_MAP } from '../data/species';
 import {
+  costForLevels,
   earningsForTree,
   incomeRate,
   isUpgradeEligible,
+  maxBoostAllocation,
   nextCost,
   REFUND_RATE,
   treeMultiplierAt,
   upgradeCost,
   UPGRADES,
+  type BoostQuantity,
   type UpgradeType,
 } from './economy';
 
@@ -225,6 +228,72 @@ export function useGarden() {
     }, 0);
   }, []);
 
+  /**
+   * Buys boost levels for every selected tree: a fixed quantity (1/10/100,
+   * atomic — all trees get exactly that many or nothing happens), or 'max',
+   * which spends all available leaves greedily across the whole selection.
+   * Returns the levels bought and leaves spent, for the caller's toast/UI.
+   */
+  const applyBoost = useCallback(
+    (plotIndices: number[], quantity: BoostQuantity): { levels: number; cost: number } | null => {
+      const current = gameRef.current;
+      const targets = plotIndices.filter((i) => current.trees[i]);
+      if (targets.length === 0) return null;
+      const entries = targets.map((i) => {
+        const tree = current.trees[i]!;
+        return { species: SPECIES_MAP[tree.speciesId], level: tree.boostLevel };
+      });
+
+      if (quantity === 'max') {
+        const { levels, totalCost } = maxBoostAllocation(entries, current.leaves);
+        const totalLevels = levels.reduce((a, b) => a + b, 0);
+        if (totalLevels === 0) return null;
+        setGame((prev) => {
+          const trees = [...prev.trees];
+          targets.forEach((i, idx) => {
+            if (levels[idx] === 0) return;
+            const tree = trees[i];
+            if (!tree) return;
+            const spent = costForLevels(entries[idx].species, tree.boostLevel, levels[idx]);
+            trees[i] = { ...tree, boostLevel: tree.boostLevel + levels[idx], invested: tree.invested + spent };
+          });
+          return { ...prev, leaves: prev.leaves - totalCost, trees };
+        });
+        return { levels: totalLevels, cost: totalCost };
+      }
+
+      const costs = entries.map((e) => costForLevels(e.species, e.level, quantity));
+      const total = costs.reduce((a, b) => a + b, 0);
+      if (current.leaves < total) return null;
+      setGame((prev) => {
+        const trees = [...prev.trees];
+        targets.forEach((i, idx) => {
+          const tree = trees[i];
+          if (!tree) return;
+          trees[i] = { ...tree, boostLevel: tree.boostLevel + quantity, invested: tree.invested + costs[idx] };
+        });
+        return { ...prev, leaves: prev.leaves - total, trees };
+      });
+      return { levels: quantity * targets.length, cost: total };
+    },
+    [],
+  );
+
+  const boostCostFor = useCallback((plotIndices: number[], quantity: BoostQuantity): { cost: number; levels: number } => {
+    const current = gameRef.current;
+    const targets = plotIndices.filter((i) => current.trees[i]);
+    const entries = targets.map((i) => {
+      const tree = current.trees[i]!;
+      return { species: SPECIES_MAP[tree.speciesId], level: tree.boostLevel };
+    });
+    if (quantity === 'max') {
+      const { levels, totalCost } = maxBoostAllocation(entries, current.leaves);
+      return { cost: totalCost, levels: levels.reduce((a, b) => a + b, 0) };
+    }
+    const cost = entries.reduce((sum, e) => sum + costForLevels(e.species, e.level, quantity), 0);
+    return { cost, levels: quantity * targets.length };
+  }, []);
+
   const refundFor = useCallback((plotIndices: number[]): number => {
     const current = gameRef.current;
     return plotIndices.reduce((sum, i) => {
@@ -242,6 +311,8 @@ export function useGarden() {
     removeTrees,
     applyUpgrade,
     upgradeCostFor,
+    applyBoost,
+    boostCostFor,
     refundFor,
   };
 }

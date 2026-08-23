@@ -81,6 +81,44 @@ export function upgradeCost(type: UpgradeType, species: TreeSpecies, boostLevel:
   return UPGRADES[type].cost(species, boostLevel);
 }
 
+/** Total cost of buying `count` consecutive boost levels starting from `fromLevel`. */
+export function costForLevels(species: TreeSpecies, fromLevel: number, count: number): number {
+  let total = 0;
+  for (let k = 0; k < count; k++) total += upgradeCost('boost', species, fromLevel + k);
+  return total;
+}
+
+export type BoostQuantity = 1 | 10 | 100 | 'max';
+
+/**
+ * Greedily spends `budget` on the single cheapest next boost level available
+ * across all entries, repeatedly, until nothing more is affordable. Correct
+ * because each entry's own cost only ever increases, so the cheapest option
+ * globally is never made a better buy by waiting.
+ */
+export function maxBoostAllocation(
+  entries: { species: TreeSpecies; level: number }[],
+  budget: number,
+): { levels: number[]; totalCost: number } {
+  const levels = entries.map(() => 0);
+  let remaining = budget;
+  while (true) {
+    let bestIndex = -1;
+    let bestCost = Infinity;
+    for (let i = 0; i < entries.length; i++) {
+      const cost = upgradeCost('boost', entries[i].species, entries[i].level + levels[i]);
+      if (cost < bestCost) {
+        bestCost = cost;
+        bestIndex = i;
+      }
+    }
+    if (bestIndex === -1 || bestCost > remaining) break;
+    remaining -= bestCost;
+    levels[bestIndex]++;
+  }
+  return { levels, totalCost: budget - remaining };
+}
+
 /** Income multiplier for a tree at a specific point in time. */
 export function treeMultiplierAt(tree: PlantedTree, atMs: number): number {
   const waterActive = !!tree.waterUntil && atMs < tree.waterUntil;

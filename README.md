@@ -19,12 +19,14 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   tick-by-tick simulation, no drift, no reward for leaving multiple tabs open.
 - **Garden plots.** Start with 6, expand up to 15 by spending leaves.
 - **Upgrades.** Watering and fertilizing are temporary income buffs — one
-  active at a time per tree, they expire on their own (3 and 8 minutes) and
+  active at a time per tree, they expire on their own (30 min and 1 hour) and
   can only be reapplied once expired. Boosting is the opposite: a permanent,
-  endlessly stackable multiplier with its own escalating cost. All three can
-  be applied to several selected trees at once (same selection UI as
-  removal), and expiry survives being offline — a buff's exact contribution
-  is integrated piecewise around its expiry timestamp, not just approximated.
+  endlessly stackable multiplier with its own escalating cost, buyable ×1,
+  ×10, ×100, or MAX (spends everything you have, greedily buying whichever
+  selected tree's next level is cheapest until you're out). All three can be
+  applied to several selected trees at once (same selection UI as removal),
+  and buff expiry survives being offline — a buff's exact contribution is
+  integrated piecewise around its expiry timestamp, not just approximated.
 - **Removing a tree refunds half of what you put into it** — purchase price
   plus every upgrade bought since — so experimenting isn't a dead loss.
 - **Local-only.** Progress is saved to `localStorage`. No backend, no

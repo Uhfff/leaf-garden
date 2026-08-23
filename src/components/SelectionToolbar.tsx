@@ -1,14 +1,19 @@
-import { UPGRADES, formatDuration, formatLeaves, pluralTrees, type UpgradeType } from '../game/economy';
+import { UPGRADES, formatDuration, formatLeaves, pluralTrees, type BoostQuantity, type UpgradeType } from '../game/economy';
 
 export type ActionType = UpgradeType | 'delete';
+
+const BOOST_QUANTITIES: BoostQuantity[] = [1, 10, 100, 'max'];
 
 interface Props {
   action: ActionType | null;
   confirmingDelete: boolean;
   selectedCount: number;
   cost: number;
+  levels: number;
   refund: number;
   leaves: number;
+  boostQuantity: BoostQuantity;
+  onSetBoostQuantity: (quantity: BoostQuantity) => void;
   onStart: (action: ActionType) => void;
   onApplyUpgrade: () => void;
   onRequestDeleteConfirm: () => void;
@@ -21,8 +26,11 @@ export function SelectionToolbar({
   confirmingDelete,
   selectedCount,
   cost,
+  levels,
   refund,
   leaves,
+  boostQuantity,
+  onSetBoostQuantity,
   onStart,
   onApplyUpgrade,
   onRequestDeleteConfirm,
@@ -73,10 +81,40 @@ export function SelectionToolbar({
   }
 
   const def = UPGRADES[action];
+
+  if (action === 'boost') {
+    const canAfford = levels > 0 && leaves >= cost;
+    return (
+      <div className="toolbar-bar">
+        <span>
+          {def.icon} {def.label.toLowerCase()} навсегда · выбрано {selectedCount} · купится {levels}{' '}
+          {pluralLevels(levels)} · стоимость {formatLeaves(cost)} 🍃
+        </span>
+        <div className="toolbar-buttons">
+          <div className="toolbar-quantity">
+            {BOOST_QUANTITIES.map((q) => (
+              <button
+                key={q}
+                className={`toolbar-quantity-btn ${boostQuantity === q ? 'active' : ''}`}
+                onClick={() => onSetBoostQuantity(q)}
+              >
+                {q === 'max' ? 'MAX' : `×${q}`}
+              </button>
+            ))}
+          </div>
+          <button className="toolbar-primary" disabled={!canAfford} onClick={onApplyUpgrade}>
+            Применить
+          </button>
+          <button className="toolbar-secondary" onClick={onCancel}>Отмена</button>
+        </div>
+      </div>
+    );
+  }
+
   const canAfford = selectedCount > 0 && leaves >= cost;
   const durationHint = def.durationMs
     ? ` на ${formatDuration(def.durationMs / 1000)} (уже политые/удобренные деревья недоступны для выбора)`
-    : ' навсегда';
+    : '';
   return (
     <div className="toolbar-bar">
       <span>
@@ -91,4 +129,12 @@ export function SelectionToolbar({
       </div>
     </div>
   );
+}
+
+function pluralLevels(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'уровень';
+  if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return 'уровня';
+  return 'уровней';
 }

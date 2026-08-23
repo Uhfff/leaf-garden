@@ -156,6 +156,29 @@
   color: #fff;
 }
 
+.toolbar-quantity {
+  display: flex;
+  gap: 4px;
+}
+
+.toolbar-quantity-btn {
+  border: 1px solid rgba(76, 110, 66, 0.3);
+  background: #fff;
+  color: #2f4a2a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.toolbar-quantity-btn.active {
+  background: #3d7a3d;
+  border-color: #3d7a3d;
+  color: #fff;
+}
+
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

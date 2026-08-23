@@ -5,17 +5,29 @@ import { HUD } from './components/HUD';
 import { Garden } from './components/Garden';
 import { PlantModal } from './components/PlantModal';
 import { SelectionToolbar, type ActionType } from './components/SelectionToolbar';
-import { formatLeaves, UPGRADES, type UpgradeType } from './game/economy';
+import { formatLeaves, UPGRADES, type BoostQuantity, type UpgradeType } from './game/economy';
 import './App.css';
 
 export default function App() {
-  const { game, incomePerSec, offlineEarnings, plantTree, buyPlot, removeTrees, applyUpgrade, upgradeCostFor, refundFor } =
-    useGarden();
+  const {
+    game,
+    incomePerSec,
+    offlineEarnings,
+    plantTree,
+    buyPlot,
+    removeTrees,
+    applyUpgrade,
+    upgradeCostFor,
+    applyBoost,
+    boostCostFor,
+    refundFor,
+  } = useGarden();
   const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
   const [action, setAction] = useState<ActionType | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [boostQuantity, setBoostQuantity] = useState<BoostQuantity>(1);
   const [toast, setToast] = useState<string | null>(
     offlineEarnings > 1 ? `Пока вас не было, сад принёс ${formatLeaves(offlineEarnings)} 🍃` : null,
   );
@@ -30,6 +42,7 @@ export default function App() {
     setAction(null);
     setConfirmingDelete(false);
     setSelected(new Set());
+    setBoostQuantity(1);
   };
 
   const toggleSelect = (index: number) => {
@@ -48,14 +61,26 @@ export default function App() {
   };
 
   const confirmUpgrade = () => {
-    if (action === 'delete' || !action) return;
+    if (!action || action === 'delete') return;
+    if (action === 'boost') {
+      const result = applyBoost([...selected], boostQuantity);
+      if (result) setToast(`Улучшено на ${result.levels} ур. за ${formatLeaves(result.cost)} 🍃`);
+      exitSelection();
+      return;
+    }
     const applied = applyUpgrade(action as UpgradeType, [...selected]);
     if (applied) setToast(`Применено: ${UPGRADES[action].label.toLowerCase()}`);
     exitSelection();
   };
 
   const selectedIndices = [...selected];
-  const cost = action && action !== 'delete' ? upgradeCostFor(action, selectedIndices) : 0;
+  const boostPreview = action === 'boost' ? boostCostFor(selectedIndices, boostQuantity) : null;
+  const cost = boostPreview
+    ? boostPreview.cost
+    : action && action !== 'delete'
+      ? upgradeCostFor(action, selectedIndices)
+      : 0;
+  const levels = boostPreview?.levels ?? 0;
   const refund = action === 'delete' ? refundFor(selectedIndices) : 0;
 
   return (
@@ -68,8 +93,11 @@ export default function App() {
             confirmingDelete={confirmingDelete}
             selectedCount={selected.size}
             cost={cost}
+            levels={levels}
             refund={refund}
             leaves={game.leaves}
+            boostQuantity={boostQuantity}
+            onSetBoostQuantity={setBoostQuantity}
             onStart={setAction}
             onApplyUpgrade={confirmUpgrade}
             onRequestDeleteConfirm={() => setConfirmingDelete(true)}
