@@ -5,7 +5,8 @@ export interface PromoCode {
 }
 
 export const PROMO_CODES: PromoCode[] = [
-  { code: 'kirillpodor2t', amount: 2_000_000_000_000 },
+  { code: 'kirillpidor2t', amount: 2_000_000_000_000 },
+  { code: 'vanyafree', amount: 1_000_000_000_000_000 },
 ];
 
 export function normalizePromoCode(input: string): string {
