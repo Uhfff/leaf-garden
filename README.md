@@ -110,8 +110,7 @@ src/
                          a no-op outside Telegram
   components/           TreeSprite (SVG), Plot, Garden, Shop modal, HUD,
                          SelectionToolbar (multi-select upgrade/delete),
-                         InviteModal (referral link), LeafParticles
-                         (ambient falling-leaf effect)
+                         InviteModal (referral link)
 ```
 
 ## Running locally

@@ -252,17 +252,12 @@
   box-shadow: 0 0 16px -6px var(--boost);
 }
 
-.garden-wrap {
-  position: relative;
-  width: 100%;
-  max-width: 900px;
-}
-
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 16px;
   width: 100%;
+  max-width: 900px;
 }
 
 .plot {
@@ -446,33 +441,6 @@ body.app-hidden .tree-sparkle {
   border-radius: 8px;
   padding: 1px 4px;
   color: var(--text-dim);
-}
-
-.leaf-particles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.leaf-particle {
-  position: absolute;
-  top: 30%;
-  font-size: 14px;
-  filter: drop-shadow(0 0 4px rgba(52, 211, 153, 0.6));
-  animation-name: float-up;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
-}
-
-@keyframes float-up {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(var(--drift), -60px) rotate(90deg);
-    opacity: 0;
-  }
 }
 
 .toast {
