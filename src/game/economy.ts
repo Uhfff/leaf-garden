@@ -1,42 +1,37 @@
 import type { PlantedTree, TreeSpecies } from '../types';
 import { ICONS } from '../icons';
 
-/** How long (in seconds) it takes a tree to grow into most of its age
- *  bonus. Shared across every species rather than tuned per-species, so
- *  "how fast trees mature" stays one dial instead of eight-plus. */
-const MATURITY_SECONDS = 1800;
+/** The age term is measured in units of this many seconds — one full day —
+ *  instead of one minute like the original formula did. Growth is still
+ *  unbounded (a tree never stops getting more valuable the longer it's
+ *  alive, by design), but the original per-minute pacing meant a tree left
+ *  planted for a day or two already reached a multiplier in the hundreds,
+ *  which is how a handful of players ended up with quadrillions of leaves
+ *  within about a day. Measuring age in days instead means the same shape
+ *  of growth now plays out over the course of days and weeks rather than
+ *  hours — meaningful long-term progress, not a runaway within a session. */
+const AGE_UNIT_SECONDS = 24 * 60 * 60;
 
-/** Instantaneous income per second for a tree of the given age.
- *
- *  The age bonus saturates toward `growthRate` instead of growing forever:
- *  `1 - e^(-age/MATURITY_SECONDS)` climbs from 0 toward 1, so a tree's
- *  multiplier approaches `1 + growthRate` and then stays there — a tree
- *  planted a week ago earns the same as one planted a month ago, instead
- *  of an old save's early trees quietly outgrowing everything else in the
- *  game by orders of magnitude the longer they're left alone. Early growth
- *  (the first minutes) is essentially unchanged from before; only the
- *  long-run behavior is different. */
+/** Instantaneous income per second for a tree of the given age. Unbounded —
+ *  there's still no single "best" tree that caps out, just diminishing
+ *  returns per additional day alive. */
 export function incomeRate(species: TreeSpecies, ageSeconds: number, multiplier = 1): number {
   const age = Math.max(ageSeconds, 0);
-  const ageBonus = 1 - Math.exp(-age / MATURITY_SECONDS);
-  return species.baseIncome * multiplier * (1 + species.growthRate * ageBonus);
+  return species.baseIncome * multiplier * (1 + species.growthRate * Math.sqrt(age / AGE_UNIT_SECONDS));
 }
 
 /**
  * Closed-form integral of incomeRate over [ageStart, ageEnd] for a constant
  * multiplier, so both the live tick loop and offline catch-up can use exact
  * math instead of approximating with many small steps.
- *
- * ∫ (1 + g·(1 - e^(-t/T))) dt = (1+g)·t + g·T·e^(-t/T) + C
  */
 export function earningsBetween(species: TreeSpecies, ageStart: number, ageEnd: number, multiplier = 1): number {
   const a = Math.max(ageStart, 0);
   const b = Math.max(ageEnd, a);
-  const g = species.growthRate;
-  const T = MATURITY_SECONDS;
-  const antiderivativeAt = (t: number) => (1 + g) * t + g * T * Math.exp(-t / T);
-  const integral = antiderivativeAt(b) - antiderivativeAt(a);
-  return species.baseIncome * multiplier * integral;
+  const linear = species.baseIncome * (b - a);
+  const k = (species.baseIncome * species.growthRate) / Math.sqrt(AGE_UNIT_SECONDS);
+  const curved = k * (2 / 3) * (Math.pow(b, 1.5) - Math.pow(a, 1.5));
+  return multiplier * (linear + curved);
 }
 
 export type GrowthStage = 0 | 1 | 2 | 3;
@@ -92,7 +87,12 @@ export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
     icon: '⭐',
     image: ICONS.boost,
     bonus: 0.35,
-    cost: (species, boostLevel) => Math.max(1, Math.round(species.cost * 4 * Math.pow(1.6, boostLevel))),
+    // At the old ×1.6/level, level 49 cost roughly 4.6×10^11 times a
+    // tree's base cost — the stated 50-level cap was never actually
+    // reachable, just a number on the label. ×1.15 keeps boosting a real,
+    // escalating investment (~940x from level 0 to 49) without making the
+    // cap fictional.
+    cost: (species, boostLevel) => Math.max(1, Math.round(species.cost * 4 * Math.pow(1.15, boostLevel))),
   },
 };
 

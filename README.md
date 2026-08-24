@@ -38,13 +38,14 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   inventory covers a species (and, for seasonal species, only shows them
   at all once inventory does). Since nothing was spent on the tree itself,
   removing a case-won tree later refunds nothing either way.
-- **Income scales with age, up to a point.** Every planted tree's income
-  follows `base * (1 + growthRate * (1 - e^(-age / 1800s)))` — climbing
-  quickly at first, then leveling off toward a fixed ceiling
-  (`1 + growthRate` times base) over the first hour or two, instead of
-  growing without limit forever. A tree planted a week ago earns the same
-  as one planted a month ago; nothing quietly outgrows the rest of the
-  game the longer a save sits untouched.
+- **Income scales with age — unbounded, but paced in days.** Every planted
+  tree's income follows `base * (1 + growthRate * sqrt(age / 1 day))`,
+  always increasing with diminishing returns, so there's no single "best"
+  tree to spam forever and no point where a tree stops getting more
+  valuable. The age term is measured in days rather than minutes
+  specifically so that shape of growth plays out over days and weeks of
+  real time instead of hours — the original per-minute pacing meant a tree
+  left planted for a day or two alone reached a multiplier in the hundreds.
 - **Runs while you're away.** A tree's age is derived from its plant
   timestamp, not from a running clock, so the exact income earned while the
   tab was closed is computed with a closed-form integral on reload — no
