@@ -74,8 +74,8 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     baseIncome: 2_200_000,
     growthRate: 4.2,
     unlockAt: Infinity,
-    trunk: '#3a1f5c',
-    foliage: ['#ff2fb0', '#00e5ff'],
+    trunk: '#3d6a86',
+    foliage: ['#4fc3f7', '#b3e5fc'],
   },
 ];
 
