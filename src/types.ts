@@ -2,7 +2,15 @@ export interface TreeSpecies {
   id: string;
   name: string;
   description: string;
+  /** Basis for planting price, water/fertilize/boost cost, and refund
+   *  tracking — for seasonal species this is deliberately much smaller
+   *  than what they're worth, since they're never actually purchased with
+   *  it. See `sellPrice` for what they're actually worth. */
   cost: number;
+  /** What selling this species pays out — falls back to `cost` when
+   *  absent, so only seasonal species (won from the exclusive case, worth
+   *  far more than their `cost` basis) need to set this separately. */
+  sellPrice?: number;
   baseIncome: number;
   growthRate: number;
   unlockAt: number;

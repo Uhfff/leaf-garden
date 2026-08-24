@@ -396,14 +396,14 @@ export function useGarden() {
     return { speciesId: species.id, speciesName: species.name };
   }, []);
 
-  /** Sells one free (case-won) tree straight out of inventory for that
-   *  species' base cost, without ever planting it. Returns the payout. */
+  /** Sells one free (case-won) tree straight out of inventory, without
+   *  ever planting it. Returns the payout. */
   const sellInventoryTree = useCallback((speciesId: string): number | null => {
     const current = gameRef.current;
     const have = current.inventory[speciesId] ?? 0;
     const species = ALL_SPECIES_MAP[speciesId];
     if (have <= 0 || !species) return null;
-    const payout = species.cost;
+    const payout = species.sellPrice ?? species.cost;
     setGame((prev) => ({
       ...prev,
       leaves: prev.leaves + payout,

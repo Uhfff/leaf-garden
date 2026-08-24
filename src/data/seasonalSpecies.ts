@@ -5,18 +5,23 @@ import type { TreeSpecies } from '../types';
  *  Infinity is belt-and-suspenders; PlantModal simply never lists them
  *  unless inventory already holds one).
  *
- *  `cost` doubles as the case-modal sell price, so it's set to keep
- *  weight * cost constant (3T) across all six — every seasonal slot
- *  contributes the same expected value to the exclusive case regardless
- *  of its odds, scaled well past the 100B case cost so even the commonest
- *  seasonal drop is a windfall. */
+ *  `cost` continues the regular species' own progression (roughly ×4.3
+ *  cost and ×2.55 income per tier, the ratios the last few regular species
+ *  already converge to) rather than being derived from `sellPrice` —
+ *  using the sell price as the upgrade/income basis was the actual bug:
+ *  a tree costing hundreds of billions to "plant" against a few thousand
+ *  leaves of base income had a payback measured in months, and boosting
+ *  it even one level cost trillions. `sellPrice` keeps the large,
+ *  weight-balanced values instead (weight * sellPrice = 3T across all
+ *  six, unrelated to how good the tree actually is to keep planted). */
 export const SEASONAL_SPECIES: TreeSpecies[] = [
   {
     id: 'ice_birch',
     name: 'Ледяная берёза',
     description: 'Кора из чистого льда, не тает даже летом — самый доступный трофей кейса.',
-    cost: 250_000_000_000,
-    baseIncome: 5_000,
+    cost: 1_400_000,
+    sellPrice: 250_000_000_000,
+    baseIncome: 1_650,
     growthRate: 2.3,
     unlockAt: Infinity,
     trunk: '#a8c4d4',
@@ -26,8 +31,9 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'frost_pine',
     name: 'Морозная сосна',
     description: 'Сверкает инеем круглый год — трофей из эксклюзивного кейса.',
-    cost: 500_000_000_000,
-    baseIncome: 15_000,
+    cost: 6_000_000,
+    sellPrice: 500_000_000_000,
+    baseIncome: 4_200,
     growthRate: 2.6,
     unlockAt: Infinity,
     trunk: '#5a6b7a',
@@ -37,8 +43,9 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'golden_maple',
     name: 'Золотой клён',
     description: 'Листва из чистого золота — не темнеет и не облетает.',
-    cost: 1_000_000_000_000,
-    baseIncome: 55_000,
+    cost: 25_000_000,
+    sellPrice: 1_000_000_000_000,
+    baseIncome: 10_800,
     growthRate: 3.0,
     unlockAt: Infinity,
     trunk: '#8a6a2f',
@@ -48,8 +55,9 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'crystal_willow',
     name: 'Хрустальная ива',
     description: 'Ветви из чистого хрусталя со звоном на ветру.',
-    cost: 2_000_000_000_000,
-    baseIncome: 190_000,
+    cost: 110_000_000,
+    sellPrice: 2_000_000_000_000,
+    baseIncome: 27_500,
     growthRate: 3.4,
     unlockAt: Infinity,
     trunk: '#8a8aa0',
@@ -59,8 +67,9 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'phoenix_tree',
     name: 'Дерево Феникса',
     description: 'Тлеет, но никогда не сгорает.',
-    cost: 6_000_000_000_000,
-    baseIncome: 650_000,
+    cost: 470_000_000,
+    sellPrice: 6_000_000_000_000,
+    baseIncome: 70_000,
     growthRate: 3.8,
     unlockAt: Infinity,
     trunk: '#4a1f1f',
@@ -70,8 +79,9 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'six_seven',
     name: '67',
     description: 'Никто толком не знает, что это значит, но оно существует — самый редкий и нелепый трофей кейса.',
-    cost: 15_000_000_000_000,
-    baseIncome: 2_200_000,
+    cost: 2_000_000_000,
+    sellPrice: 15_000_000_000_000,
+    baseIncome: 178_000,
     growthRate: 4.2,
     unlockAt: Infinity,
     trunk: '#3d6a86',

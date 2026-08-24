@@ -22,7 +22,13 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   across all six, so every seasonal slot contributes equally to the case's
   expected value regardless of how rare it is: 250B for Ice Birch up to 15T
   for "67" (rarer, and worth more, than Phoenix Tree), all well past the
-  case's own 100B cost.
+  case's own 100B cost. That sell price is deliberately its own number,
+  separate from what growing the tree costs to maintain — the two used to
+  be the same field, which meant boosting a seasonal tree even once cost
+  trillions and its own base income needed months to pay back what it
+  "cost." Planting one now costs (and earns) in line with where the
+  regular species' own progression would naturally continue, while still
+  paying out its full, large sell price if you cash it in instead.
   Both share the same mechanics: odds shown up front, opening spins a
   scrolling reel (drawn from that same weighted roll, ending in the real
   result, with a few more items rolled past it so the strip doesn't dead-end

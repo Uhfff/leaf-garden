@@ -150,7 +150,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, luckBoostPercent, fr
             <p className="case-result">Выпало: <strong>{won.name}</strong>! 🎉</p>
             <div className="case-reveal-buttons">
               <button className="toolbar-secondary" onClick={handleSell}>
-                Продать за {formatLeaves(won.cost)} 🍃
+                Продать за {formatLeaves(won.sellPrice ?? won.cost)} 🍃
               </button>
               <button className="toolbar-primary" onClick={handleKeep}>
                 Оставить в инвентаре
