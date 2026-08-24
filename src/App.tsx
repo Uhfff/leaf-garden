@@ -6,6 +6,7 @@ import { Garden } from './components/Garden';
 import { PlantModal } from './components/PlantModal';
 import { CaseModal } from './components/CaseModal';
 import { PromoCodeModal } from './components/PromoCodeModal';
+import { InviteModal } from './components/InviteModal';
 import { SelectionToolbar, type ActionType } from './components/SelectionToolbar';
 import { formatLeaves, UPGRADES, type BoostQuantity, type UpgradeType } from './game/economy';
 import './App.css';
@@ -32,6 +33,7 @@ export default function App() {
   const [openPlot, setOpenPlot] = useState<number | null>(null);
   const [caseModalId, setCaseModalId] = useState<string | null>(null);
   const [promoModalOpen, setPromoModalOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -117,6 +119,7 @@ export default function App() {
             onCancel={exitSelection}
             onOpenCase={(caseId) => setCaseModalId(caseId)}
             onOpenPromo={() => setPromoModalOpen(true)}
+            onOpenInvite={() => setInviteModalOpen(true)}
           />
         </div>
         <Garden
@@ -160,6 +163,7 @@ export default function App() {
       {promoModalOpen && (
         <PromoCodeModal onRedeem={redeemPromoCode} onClose={() => setPromoModalOpen(false)} />
       )}
+      {inviteModalOpen && <InviteModal onClose={() => setInviteModalOpen(false)} />}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );

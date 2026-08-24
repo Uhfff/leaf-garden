@@ -6,6 +6,17 @@ interface TelegramWebApp {
   disableVerticalSwipes?: () => void;
   isExpanded: boolean;
   platform: string;
+  initDataUnsafe?: { user?: { id: number } };
+}
+
+export const BOT_USERNAME = 'LeafSimulatorBot';
+
+/** The Telegram user id behind this session, or null when the game is
+ *  opened outside Telegram (a plain browser tab has no such identity) — the
+ *  referral link is only meaningful inside the Mini App, since it's built
+ *  from this id. */
+export function getTelegramUserId(): number | null {
+  return window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
 }
 
 declare global {

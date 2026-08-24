@@ -68,12 +68,15 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   the case modal's "Открыть бесплатно" button).
 - **Local-only.** Progress is saved to `localStorage`. No backend, no
   accounts.
-- **Referral links, via the bot.** `/invite` in the Telegram bot returns a
-  personal `t.me/...?start=ref<telegramId>` link. When someone opens the bot
-  through it, the bot sends the referrer a gift button worth 5 trillion
-  leaves — `?gift=ref:<referrerId>:<newUserId>`, so each invited friend is
-  its own voucher (one payout per friend, replaying the same friend's link
-  again pays nothing, same as any other gift link).
+- **Referral links.** A toolbar icon (👥) opens the player's personal
+  `t.me/...?start=ref<telegramId>` link — built client-side from the
+  Telegram Mini App's own user id, with a one-tap copy button — or, outside
+  Telegram, a note pointing at the bot instead (there's no id to build a
+  link from in a plain browser tab). `/invite` in the bot returns the same
+  link. When someone opens the bot through it, the bot sends the referrer a
+  gift button worth 5 trillion leaves — `?gift=ref:<referrerId>:<newUserId>`,
+  so each invited friend is its own voucher (one payout per friend, replaying
+  the same friend's link again pays nothing, same as any other gift link).
 - **Playable as a Telegram Mini App.** Loads the Telegram Web App SDK and,
   when actually opened inside Telegram, expands to full height and matches
   the app's header/background to its own dark theme. Outside Telegram it's
@@ -102,7 +105,8 @@ src/
                          a no-op outside Telegram
   components/           TreeSprite (SVG), Plot, Garden, Shop modal, HUD,
                          SelectionToolbar (multi-select upgrade/delete),
-                         LeafParticles (ambient falling-leaf effect)
+                         InviteModal (referral link), LeafParticles
+                         (ambient falling-leaf effect)
 ```
 
 ## Running locally

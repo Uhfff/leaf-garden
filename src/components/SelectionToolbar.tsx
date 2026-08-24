@@ -23,6 +23,7 @@ interface Props {
   onCancel: () => void;
   onOpenCase: (caseId: string) => void;
   onOpenPromo: () => void;
+  onOpenInvite: () => void;
 }
 
 export function SelectionToolbar({
@@ -42,6 +43,7 @@ export function SelectionToolbar({
   onCancel,
   onOpenCase,
   onOpenPromo,
+  onOpenInvite,
 }: Props) {
   const [carePickerOpen, setCarePickerOpen] = useState(false);
   const [casePickerOpen, setCasePickerOpen] = useState(false);
@@ -104,6 +106,9 @@ export function SelectionToolbar({
         </button>
         <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>
           🎟
+        </button>
+        <button className="toolbar-icon-btn" title="Пригласить друзей" onClick={onOpenInvite}>
+          👥
         </button>
       </div>
     );
