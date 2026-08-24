@@ -1,24 +1,42 @@
 import type { PlantedTree, TreeSpecies } from '../types';
 import { ICONS } from '../icons';
 
-/** Instantaneous income per second for a tree of the given age. */
+/** How long (in seconds) it takes a tree to grow into most of its age
+ *  bonus. Shared across every species rather than tuned per-species, so
+ *  "how fast trees mature" stays one dial instead of eight-plus. */
+const MATURITY_SECONDS = 1800;
+
+/** Instantaneous income per second for a tree of the given age.
+ *
+ *  The age bonus saturates toward `growthRate` instead of growing forever:
+ *  `1 - e^(-age/MATURITY_SECONDS)` climbs from 0 toward 1, so a tree's
+ *  multiplier approaches `1 + growthRate` and then stays there — a tree
+ *  planted a week ago earns the same as one planted a month ago, instead
+ *  of an old save's early trees quietly outgrowing everything else in the
+ *  game by orders of magnitude the longer they're left alone. Early growth
+ *  (the first minutes) is essentially unchanged from before; only the
+ *  long-run behavior is different. */
 export function incomeRate(species: TreeSpecies, ageSeconds: number, multiplier = 1): number {
   const age = Math.max(ageSeconds, 0);
-  return species.baseIncome * multiplier * (1 + species.growthRate * Math.sqrt(age / 60));
+  const ageBonus = 1 - Math.exp(-age / MATURITY_SECONDS);
+  return species.baseIncome * multiplier * (1 + species.growthRate * ageBonus);
 }
 
 /**
  * Closed-form integral of incomeRate over [ageStart, ageEnd] for a constant
  * multiplier, so both the live tick loop and offline catch-up can use exact
  * math instead of approximating with many small steps.
+ *
+ * ∫ (1 + g·(1 - e^(-t/T))) dt = (1+g)·t + g·T·e^(-t/T) + C
  */
 export function earningsBetween(species: TreeSpecies, ageStart: number, ageEnd: number, multiplier = 1): number {
   const a = Math.max(ageStart, 0);
   const b = Math.max(ageEnd, a);
-  const linear = species.baseIncome * (b - a);
-  const k = (species.baseIncome * species.growthRate) / Math.sqrt(60);
-  const curved = k * (2 / 3) * (Math.pow(b, 1.5) - Math.pow(a, 1.5));
-  return multiplier * (linear + curved);
+  const g = species.growthRate;
+  const T = MATURITY_SECONDS;
+  const antiderivativeAt = (t: number) => (1 + g) * t + g * T * Math.exp(-t / T);
+  const integral = antiderivativeAt(b) - antiderivativeAt(a);
+  return species.baseIncome * multiplier * integral;
 }
 
 export type GrowthStage = 0 | 1 | 2 | 3;
