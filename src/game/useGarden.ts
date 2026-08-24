@@ -3,6 +3,7 @@ import type { GameState, PlantedTree } from '../types';
 import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { CASE_MAP, rollCaseSpecies } from '../data/cases';
 import { findPromoCode, normalizePromoCode, type PromoEffect } from '../data/promoCodes';
+import { reportStats } from '../telegram';
 import {
   costForLevels,
   earningsForTree,
@@ -21,6 +22,7 @@ import {
 
 const STORAGE_KEY = 'leaf-garden-save-v1';
 const SAVE_INTERVAL_MS = 5000;
+const STATS_INTERVAL_MS = 60_000;
 const OFFLINE_CAP_MS = 12 * 60 * 60 * 1000;
 
 export const START_PLOTS = 6;
@@ -235,6 +237,7 @@ export function useGarden() {
   const [incomePerSec, setIncomePerSec] = useState(0);
   const gameRef = useRef(game);
   gameRef.current = game;
+  const incomePerSecRef = useRef(0);
 
   useEffect(() => {
     if (!giftCode) return;
@@ -257,10 +260,26 @@ export function useGarden() {
         if (!species) return sum;
         return sum + incomeRate(species, (now - tree.plantedAt) / 1000, treeMultiplierAt(tree, now));
       }, 0);
+      incomePerSecRef.current = rate;
       setIncomePerSec(rate);
     };
     tick();
     const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const report = () => {
+      const current = gameRef.current;
+      reportStats({
+        leaves: current.leaves,
+        totalEarned: current.totalEarned,
+        incomePerSec: incomePerSecRef.current,
+        trees: current.trees.filter((t): t is PlantedTree => t !== null).map((t) => t.speciesId),
+      });
+    };
+    report();
+    const id = setInterval(report, STATS_INTERVAL_MS);
     return () => clearInterval(id);
   }, []);
 

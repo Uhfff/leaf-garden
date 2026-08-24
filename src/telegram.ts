@@ -22,6 +22,24 @@ export function getTelegramUserId(): number | null {
   return window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
 }
 
+// Same pattern as BOT_USERNAME — a staging build points this at the test
+// bot's worker instead of the live one via VITE_STATS_URL.
+const STATS_URL = import.meta.env.VITE_STATS_URL || 'https://leaf-garden-bot.leaf-garden-bot.workers.dev/stats';
+
+/** Best-effort telemetry so the bot can answer "how are players doing" —
+ *  only sent inside Telegram, since that's the only place a stable id
+ *  exists to key it by. Never awaited, never throws into the caller: a
+ *  failed report must not affect the game itself. */
+export function reportStats(stats: { leaves: number; totalEarned: number; incomePerSec: number; trees: string[] }): void {
+  const chatId = getTelegramUserId();
+  if (!chatId) return;
+  fetch(STATS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chatId, ...stats }),
+  }).catch(() => {});
+}
+
 declare global {
   interface Window {
     Telegram?: { WebApp?: TelegramWebApp };
