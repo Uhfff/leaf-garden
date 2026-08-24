@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { PromoRedeemResult } from '../game/useGarden';
+import { ICONS } from '../icons';
 
 interface Props {
   onRedeem: (code: string) => PromoRedeemResult;
@@ -20,7 +21,7 @@ export function PromoCodeModal({ onRedeem, onClose }: Props) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>🎟 Промокод</h2>
+          <h2><img src={ICONS.promo} alt="" className="modal-icon-img" /> Промокод</h2>
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
         <form className="promo-form" onSubmit={handleSubmit}>

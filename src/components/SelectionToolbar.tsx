@@ -111,10 +111,10 @@ export function SelectionToolbar({
             <img src={ICONS.casesEntry} alt="" className="toolbar-icon-img" />
           </button>
           <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>
-            🎟
+            <img src={ICONS.promo} alt="" className="toolbar-icon-img" />
           </button>
           <button className="toolbar-icon-btn" title="Пригласить друзей" onClick={onOpenInvite}>
-            👥
+            <img src={ICONS.invite} alt="" className="toolbar-icon-img" />
           </button>
         </div>
       </div>

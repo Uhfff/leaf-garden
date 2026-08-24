@@ -12,4 +12,6 @@ export const ICONS = {
   water: iconUrl('water.png'),
   fertilize: iconUrl('fertilizer.png'),
   boost: iconUrl('levelup.png'),
+  promo: iconUrl('promo.png'),
+  invite: iconUrl('referral.png'),
 };

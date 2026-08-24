@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BOT_USERNAME, getTelegramUserId } from '../telegram';
+import { ICONS } from '../icons';
 
 interface Props {
   onClose: () => void;
@@ -22,7 +23,7 @@ export function InviteModal({ onClose }: Props) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>👥 Пригласить друзей</h2>
+          <h2><img src={ICONS.invite} alt="" className="modal-icon-img" /> Пригласить друзей</h2>
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
         {link ? (
