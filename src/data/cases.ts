@@ -1,5 +1,6 @@
 import type { TreeSpecies } from '../types';
 import { ALL_SPECIES_MAP } from './allSpecies';
+import { ICONS } from '../icons';
 
 export interface CaseDrop {
   speciesId: string;
@@ -9,7 +10,7 @@ export interface CaseDrop {
 export interface CaseDef {
   id: string;
   name: string;
-  icon: string;
+  image: string;
   cost: number;
   drops: CaseDrop[];
 }
@@ -18,7 +19,7 @@ export const CASES: CaseDef[] = [
   {
     id: 'common',
     name: 'Обычный кейс',
-    icon: '🎁',
+    image: ICONS.caseCommon,
     cost: 2000,
     // Steep, casino-style drop-off: common species are very common, the
     // top prize is a genuine long shot instead of a modest 1-in-150 chance.
@@ -36,7 +37,7 @@ export const CASES: CaseDef[] = [
   {
     id: 'exclusive',
     name: 'Эксклюзивный кейс',
-    icon: '❄️',
+    image: ICONS.caseExclusive,
     cost: 100_000_000_000,
     // 4 top-tier regular species as "consolation" prizes, plus all 5
     // seasonal species that can *only* come from this case — never sold

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { UPGRADES, formatDuration, formatLeaves, pluralTrees, type BoostQuantity, type UpgradeType } from '../game/economy';
 import { CASES } from '../data/cases';
+import { ICONS } from '../icons';
 
 export type ActionType = UpgradeType | 'delete';
 
@@ -66,7 +67,7 @@ export function SelectionToolbar({
                   onStart(type);
                 }}
               >
-                {UPGRADES[type].icon}
+                <img src={UPGRADES[type].image} alt={UPGRADES[type].label} className="toolbar-icon-img" />
               </button>
             ))}
           </div>
@@ -89,7 +90,7 @@ export function SelectionToolbar({
                 onOpenCase(c.id);
               }}
             >
-              {c.icon}
+              <img src={c.image} alt={c.name} className="toolbar-icon-img" />
             </button>
           ))}
         </div>
@@ -99,15 +100,15 @@ export function SelectionToolbar({
       <div className="toolbar-icons-split">
         <div className="toolbar-icons">
           <button className="toolbar-icon-btn" title="Уход за деревом (полить/удобрить/улучшить)" onClick={() => setCarePickerOpen(true)}>
-            🪴
+            <img src={ICONS.careEntry} alt="" className="toolbar-icon-img" />
           </button>
           <button className="toolbar-icon-btn" title="Удалить деревья" onClick={() => onStart('delete')}>
-            🗑
+            <img src={ICONS.delete} alt="" className="toolbar-icon-img" />
           </button>
         </div>
         <div className="toolbar-icons">
           <button className="toolbar-icon-btn" title="Кейсы" onClick={() => setCasePickerOpen(true)}>
-            🎁
+            <img src={ICONS.casesEntry} alt="" className="toolbar-icon-img" />
           </button>
           <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>
             🎟

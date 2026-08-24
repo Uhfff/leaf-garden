@@ -107,7 +107,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{caseDef.icon} {caseDef.name}</h2>
+          <h2><img src={caseDef.image} alt="" className="modal-icon-img" /> {caseDef.name}</h2>
           <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
         </div>
 
@@ -139,7 +139,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
               </div>
             </>
           ) : (
-            <span className="case-box-icon">{caseDef.icon}</span>
+            <img src={caseDef.image} alt={caseDef.name} className="case-box-icon" />
           )}
         </div>
 

@@ -1,4 +1,5 @@
 import type { PlantedTree, TreeSpecies } from '../types';
+import { ICONS } from '../icons';
 
 /** Instantaneous income per second for a tree of the given age. */
 export function incomeRate(species: TreeSpecies, ageSeconds: number, multiplier = 1): number {
@@ -39,7 +40,12 @@ export type UpgradeType = 'water' | 'fertilize' | 'boost';
 
 interface UpgradeDef {
   label: string;
+  /** Emoji glyph — used where the icon sits inline in plain text (plot
+   *  badges, the toolbar's upgrade-summary line), which a raster image
+   *  can't do. */
   icon: string;
+  /** Artwork for the standalone icon-only buttons (the care sub-menu). */
+  image: string;
   bonus: number;
   /** Present only for temporary, single-instance buffs (water, fertilize). */
   durationMs?: number;
@@ -50,6 +56,7 @@ export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
   water: {
     label: 'Полить',
     icon: '💧',
+    image: ICONS.water,
     bonus: 0.2,
     durationMs: 30 * 60 * 1000,
     cost: (species) => Math.max(1, Math.round(species.cost * 0.5)),
@@ -57,6 +64,7 @@ export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
   fertilize: {
     label: 'Удобрить',
     icon: '🌿',
+    image: ICONS.fertilize,
     bonus: 0.4,
     durationMs: 60 * 60 * 1000,
     cost: (species) => Math.max(1, Math.round(species.cost * 1.5)),
@@ -64,6 +72,7 @@ export const UPGRADES: Record<UpgradeType, UpgradeDef> = {
   boost: {
     label: 'Улучшить',
     icon: '⭐',
+    image: ICONS.boost,
     bonus: 0.35,
     cost: (species, boostLevel) => Math.max(1, Math.round(species.cost * 4 * Math.pow(1.6, boostLevel))),
   },
