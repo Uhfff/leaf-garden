@@ -9,7 +9,10 @@ interface TelegramWebApp {
   initDataUnsafe?: { user?: { id: number } };
 }
 
-export const BOT_USERNAME = 'LeafSimulatorBot';
+// A staging build points this at the test bot via VITE_BOT_USERNAME, so the
+// invite link generated in that build matches the bot it'll actually be
+// tested against instead of the live one.
+export const BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME || 'LeafSimulatorBot';
 
 /** The Telegram user id behind this session, or null when the game is
  *  opened outside Telegram (a plain browser tab has no such identity) — the
