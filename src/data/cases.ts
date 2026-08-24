@@ -1,5 +1,6 @@
 import type { TreeSpecies } from '../types';
 import { ALL_SPECIES_MAP } from './allSpecies';
+import { SEASONAL_SPECIES_MAP } from './seasonalSpecies';
 import { ICONS } from '../icons';
 
 export interface CaseDrop {
@@ -59,23 +60,20 @@ export const CASES: CaseDef[] = [
 
 export const CASE_MAP: Record<string, CaseDef> = Object.fromEntries(CASES.map((c) => [c.id, c]));
 
-/** A luck boost makes every drop *except* the single most common one
- *  `boostPercent`% more likely, funded by that most-common entry's
- *  relative share shrinking as the total grows — so it's a real shift
- *  toward rarer prizes, not a no-op uniform scale-up. The percent comes
- *  from whichever promo code activated it (see PromoEffect 'luckBoost'),
- *  not a fixed constant, so different codes can grant different strengths. */
+/** A luck boost only touches actual rare trophies — the seasonal species
+ *  that never sell in the regular shop at any price — leaving the regular
+ *  "consolation" species (sakura, spruce, baobab, sequoia in the exclusive
+ *  case) at their normal odds. Weight alone doesn't identify "rare" here:
+ *  some seasonal trees (e.g. ice_birch) have a *higher* raw weight than a
+ *  regular consolation slot (sequoia), so the boost keys off the seasonal
+ *  species table itself, not a weight threshold. The percent comes from
+ *  whichever promo code activated it (see PromoEffect 'luckBoost'), not a
+ *  fixed constant, so different codes can grant different strengths. */
 function effectiveDrops(caseDef: CaseDef, boostPercent: number): CaseDrop[] {
   if (boostPercent <= 0) return caseDef.drops;
-  const maxWeight = Math.max(...caseDef.drops.map((d) => d.weight));
-  let usedBump = false;
-  return caseDef.drops.map((d) => {
-    if (!usedBump && d.weight === maxWeight) {
-      usedBump = true;
-      return d;
-    }
-    return { ...d, weight: d.weight * (1 + boostPercent / 100) };
-  });
+  return caseDef.drops.map((d) =>
+    SEASONAL_SPECIES_MAP[d.speciesId] ? { ...d, weight: d.weight * (1 + boostPercent / 100) } : d,
+  );
 }
 
 export function dropChance(caseDef: CaseDef, speciesId: string, boostPercent = 0): number {
