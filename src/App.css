@@ -40,9 +40,11 @@
   justify-content: space-between;
   gap: 16px;
   padding: calc(16px + env(safe-area-inset-top)) 24px 16px;
-  background: rgba(10, 16, 28, 0.65);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* A blurred, sticky header is one of the most expensive things a mobile
+     GPU can be asked to do — it has to re-composite the blur every frame
+     anything scrolls or animates behind it, for as long as it's on
+     screen. Solid enough opacity reads the same without the ongoing cost. */
+  background: rgba(9, 14, 25, 0.94);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -129,8 +131,10 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  background: var(--glass);
-  backdrop-filter: blur(10px);
+  /* Solid instead of blurred-glass — up to 5 of these sit on screen at
+     once through every second of active play, each its own ongoing
+     backdrop-blur cost on a phone GPU for no visual payoff worth it. */
+  background: rgba(22, 30, 46, 0.82);
   border-radius: 12px;
   width: 42px;
   height: 42px;
@@ -165,9 +169,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: var(--glass);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(22, 30, 46, 0.82);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px 16px;
@@ -355,8 +357,7 @@
   height: 22px;
   border-radius: 50%;
   border: 2px solid var(--border-strong);
-  background: rgba(6, 11, 20, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(6, 11, 20, 0.85);
   color: #04140d;
   font-size: 13px;
   font-weight: 700;
@@ -479,8 +480,7 @@ body.app-hidden .tree-sparkle {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(10, 16, 28, 0.85);
-  backdrop-filter: blur(10px);
+  background: rgba(9, 14, 25, 0.94);
   border: 1px solid var(--border-strong);
   color: var(--text);
   padding: 12px 20px;
@@ -493,8 +493,13 @@ body.app-hidden .tree-sparkle {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(3, 6, 12, 0.6);
-  backdrop-filter: blur(4px);
+  /* This used to be a full-viewport blur active for as long as any modal
+     is open — including the whole 3.2s case-reel spin, the single most
+     animation-heavy moment in the app, right when a phone GPU can least
+     afford extra work. A darker solid tint gives the same visual
+     separation from the page behind it without re-blurring the entire
+     screen every frame. */
+  background: rgba(3, 6, 12, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -752,6 +757,13 @@ body.app-hidden .tree-sparkle {
 
 .case-reel-item .tree-sway {
   animation: none;
+}
+
+/* 22 of these translate across the screen at once during the spin — the
+   glow filter each one carries normally is a per-frame rasterization
+   cost that a single stationary garden tree never has to pay 22x over. */
+.case-reel-item .tree-sprite {
+  filter: none;
 }
 
 .case-box-icon {
