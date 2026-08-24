@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { PlantedTree } from '../types';
 import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplierAt, UPGRADES, MAX_BOOST_LEVEL } from '../game/economy';
@@ -13,7 +14,7 @@ interface Props {
   onToggleSelect: () => void;
 }
 
-export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect }: Props) {
+function PlotImpl({ tree, now, action, selected, onClickEmpty, onToggleSelect }: Props) {
   const selectMode = action !== null;
 
   if (!tree) {
@@ -81,3 +82,15 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
     </button>
   );
 }
+
+// An empty plot never reads `now` — nothing there ages. Garden re-creates
+// onClickEmpty/onToggleSelect as fresh closures every render regardless
+// (they just capture this plot's stable index), so skip re-rendering an
+// empty plot on every tick's `now` change, which is otherwise the single
+// most frequent re-render this component would ever see given how many
+// plots tend to sit empty. A tree being planted still shows up immediately
+// since a null-to-tree transition always compares as "changed".
+export const Plot = memo(PlotImpl, (prev, next) => {
+  if (prev.tree !== null || next.tree !== null) return false;
+  return prev.action === next.action && prev.selected === next.selected;
+});

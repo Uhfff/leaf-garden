@@ -52,6 +52,15 @@ export default function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
+  // Lets CSS pause every tree's infinite sway/sparkle animation while
+  // hidden — see the .app-hidden rule in App.css.
+  useEffect(() => {
+    const sync = () => document.body.classList.toggle('app-hidden', document.hidden);
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => document.removeEventListener('visibilitychange', sync);
+  }, []);
+
   const exitSelection = () => {
     setAction(null);
     setConfirmingDelete(false);

@@ -395,6 +395,16 @@
   animation: sparkle 1.8s ease-in-out infinite;
 }
 
+/* Belt-and-suspenders alongside the JS-side visibility pausing: most
+   engines already stop compositing a hidden tab on their own, but this
+   guarantees every tree's infinite sway/sparkle animation is actually
+   halted rather than just invisible, in case a WebView keeps compositing
+   a "minimized" Mini App longer than a normal hidden browser tab does. */
+body.app-hidden .tree-sway,
+body.app-hidden .tree-sparkle {
+  animation-play-state: paused;
+}
+
 @keyframes sparkle {
   0%, 100% { opacity: 0.2; }
   50% { opacity: 1; }
