@@ -37,6 +37,7 @@ function freshState(): GameState {
     lastTick: Date.now(),
     inventory: {},
     luckBoostUntil: 0,
+    luckBoostPercent: 0,
     freeCaseCharges: {},
   };
 }
@@ -76,7 +77,14 @@ function applyPromoEffect(state: GameState, effect: PromoEffect): GameState {
     return { ...state, leaves: state.leaves + effect.amount, totalEarned: state.totalEarned + effect.amount };
   }
   if (effect.type === 'luckBoost') {
-    return { ...state, luckBoostUntil: Math.max(state.luckBoostUntil, Date.now() + effect.durationMs) };
+    // A currently-active, stronger boost isn't downgraded by a weaker code —
+    // but its duration still extends either way.
+    const currentPercent = state.luckBoostUntil > Date.now() ? state.luckBoostPercent : 0;
+    return {
+      ...state,
+      luckBoostUntil: Math.max(state.luckBoostUntil, Date.now() + effect.durationMs),
+      luckBoostPercent: Math.max(currentPercent, effect.percent),
+    };
   }
   if (effect.type === 'freeCases') {
     return {
@@ -198,6 +206,9 @@ function loadSave(): {
       trees,
       inventory: parsed.inventory ?? {},
       luckBoostUntil: parsed.luckBoostUntil ?? 0,
+      // Older saves could have an active boost with no stored percent — 35
+      // was the only strength that ever existed before per-code percents.
+      luckBoostPercent: parsed.luckBoostPercent ?? 35,
       freeCaseCharges: parsed.freeCaseCharges ?? {},
       leaves: parsed.leaves + earnings,
       totalEarned: parsed.totalEarned + earnings,
@@ -318,8 +329,8 @@ export function useGarden() {
     const freeAvailable = current.freeCaseCharges[caseId] ?? 0;
     const usingFree = freeAvailable > 0;
     if (!usingFree && current.leaves < caseDef.cost) return null;
-    const boosted = current.luckBoostUntil > Date.now();
-    const species = rollCaseSpecies(caseDef, boosted);
+    const boostPercent = current.luckBoostUntil > Date.now() ? current.luckBoostPercent : 0;
+    const species = rollCaseSpecies(caseDef, boostPercent);
     setGame((prev) => ({
       ...prev,
       leaves: usingFree ? prev.leaves : prev.leaves - caseDef.cost,

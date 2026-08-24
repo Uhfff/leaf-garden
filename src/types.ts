@@ -32,6 +32,8 @@ export interface GameState {
   inventory: Record<string, number>;
   /** Epoch ms until which case rolls are luck-boosted; 0 or past = inactive. */
   luckBoostUntil: number;
+  /** Weight bonus applied while luckBoostUntil is active — meaningless once it lapses. */
+  luckBoostPercent: number;
   /** Free case opens banked by case id, spent before leaves are charged. */
   freeCaseCharges: Record<string, number>;
 }

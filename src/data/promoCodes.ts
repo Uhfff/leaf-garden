@@ -19,6 +19,8 @@ export const PROMO_CODES: PromoCode[] = [
   { code: 'newcases', effect: { type: 'freeCases', caseId: 'common', count: 50 } },
   { code: 'specialbonus', effect: { type: 'leaves', amount: 5_000_000_000_000 } },
   { code: 'tree67x3', effect: { type: 'trees', speciesId: 'six_seven', count: 3 } },
+  { code: 'luck67', effect: { type: 'luckBoost', percent: 67, durationMs: 2 * DAY_MS } },
+  { code: 'megabonus', effect: { type: 'leaves', amount: 10_000_000_000_000 } },
 ];
 
 export function normalizePromoCode(input: string): string {

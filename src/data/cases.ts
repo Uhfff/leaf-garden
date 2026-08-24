@@ -59,14 +59,14 @@ export const CASES: CaseDef[] = [
 
 export const CASE_MAP: Record<string, CaseDef> = Object.fromEntries(CASES.map((c) => [c.id, c]));
 
-export const LUCK_BOOST_PERCENT = 35;
-
 /** A luck boost makes every drop *except* the single most common one
- *  `LUCK_BOOST_PERCENT`% more likely, funded by that most-common entry's
+ *  `boostPercent`% more likely, funded by that most-common entry's
  *  relative share shrinking as the total grows — so it's a real shift
- *  toward rarer prizes, not a no-op uniform scale-up. */
-function effectiveDrops(caseDef: CaseDef, boosted: boolean): CaseDrop[] {
-  if (!boosted) return caseDef.drops;
+ *  toward rarer prizes, not a no-op uniform scale-up. The percent comes
+ *  from whichever promo code activated it (see PromoEffect 'luckBoost'),
+ *  not a fixed constant, so different codes can grant different strengths. */
+function effectiveDrops(caseDef: CaseDef, boostPercent: number): CaseDrop[] {
+  if (boostPercent <= 0) return caseDef.drops;
   const maxWeight = Math.max(...caseDef.drops.map((d) => d.weight));
   let usedBump = false;
   return caseDef.drops.map((d) => {
@@ -74,12 +74,12 @@ function effectiveDrops(caseDef: CaseDef, boosted: boolean): CaseDrop[] {
       usedBump = true;
       return d;
     }
-    return { ...d, weight: d.weight * (1 + LUCK_BOOST_PERCENT / 100) };
+    return { ...d, weight: d.weight * (1 + boostPercent / 100) };
   });
 }
 
-export function dropChance(caseDef: CaseDef, speciesId: string, boosted = false): number {
-  const drops = effectiveDrops(caseDef, boosted);
+export function dropChance(caseDef: CaseDef, speciesId: string, boostPercent = 0): number {
+  const drops = effectiveDrops(caseDef, boostPercent);
   const total = drops.reduce((sum, d) => sum + d.weight, 0);
   const drop = drops.find((d) => d.speciesId === speciesId);
   return drop ? (drop.weight / total) * 100 : 0;
@@ -87,8 +87,8 @@ export function dropChance(caseDef: CaseDef, speciesId: string, boosted = false)
 
 /** A tree's species doesn't need to be unlocked to drop from a case —
  *  landing a rare species early is the whole point of opening one. */
-export function rollCaseSpecies(caseDef: CaseDef, boosted = false): TreeSpecies {
-  const drops = effectiveDrops(caseDef, boosted);
+export function rollCaseSpecies(caseDef: CaseDef, boostPercent = 0): TreeSpecies {
+  const drops = effectiveDrops(caseDef, boostPercent);
   const total = drops.reduce((sum, d) => sum + d.weight, 0);
   let r = Math.random() * total;
   for (const drop of drops) {

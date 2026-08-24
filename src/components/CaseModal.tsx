@@ -9,6 +9,7 @@ interface Props {
   caseId: string;
   leaves: number;
   luckBoostUntil: number;
+  luckBoostPercent: number;
   freeCharges: number;
   onOpen: (caseId: string) => { speciesId: string; speciesName: string } | null;
   onSell: (speciesId: string) => number | null;
@@ -29,11 +30,11 @@ const SPIN_MS = 3200;
  *  winner, with a few more rolled after it — is drawn from the same
  *  weighted roll as the actual result, so nothing about what flies past is
  *  staged. */
-function buildReel(caseDef: CaseDef, winner: TreeSpecies, boosted: boolean): TreeSpecies[] {
+function buildReel(caseDef: CaseDef, winner: TreeSpecies, boostPercent: number): TreeSpecies[] {
   const reel: TreeSpecies[] = [];
-  for (let i = 0; i < WINNER_INDEX; i++) reel.push(rollCaseSpecies(caseDef, boosted));
+  for (let i = 0; i < WINNER_INDEX; i++) reel.push(rollCaseSpecies(caseDef, boostPercent));
   reel.push(winner);
-  for (let i = 0; i < TRAILING_ITEMS; i++) reel.push(rollCaseSpecies(caseDef, boosted));
+  for (let i = 0; i < TRAILING_ITEMS; i++) reel.push(rollCaseSpecies(caseDef, boostPercent));
   return reel;
 }
 
@@ -46,7 +47,7 @@ function buildReel(caseDef: CaseDef, winner: TreeSpecies, boosted: boolean): Tre
 // ended up mostly off-screen, showing empty space instead of trees.
 const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - (WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2);
 
-export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen, onSell, onClose }: Props) {
+export function CaseModal({ caseId, leaves, luckBoostUntil, luckBoostPercent, freeCharges, onOpen, onSell, onClose }: Props) {
   const caseDef = CASE_MAP[caseId];
   const [reel, setReel] = useState<TreeSpecies[] | null>(null);
   const [moved, setMoved] = useState(false);
@@ -55,6 +56,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const boosted = luckBoostUntil > Date.now();
+  const boostPercent = boosted ? luckBoostPercent : 0;
   const spinning = reel !== null && !won;
   const canAfford = freeCharges > 0 || leaves >= caseDef.cost;
   const canOpen = canAfford && !spinning;
@@ -63,8 +65,8 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
     () =>
       caseDef.drops
         .slice()
-        .sort((a, b) => dropChance(caseDef, b.speciesId, boosted) - dropChance(caseDef, a.speciesId, boosted)),
-    [caseDef, boosted],
+        .sort((a, b) => dropChance(caseDef, b.speciesId, boostPercent) - dropChance(caseDef, a.speciesId, boostPercent)),
+    [caseDef, boostPercent],
   );
 
   const handleOpen = () => {
@@ -76,7 +78,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
     setWon(null);
     setSold(null);
     setMoved(false);
-    setReel(buildReel(caseDef, winner, boosted));
+    setReel(buildReel(caseDef, winner, boostPercent));
 
     // A brief timeout instead of requestAnimationFrame — the strip needs to
     // actually paint at rest (transform: none) for one frame before the
@@ -113,7 +115,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
 
         {boosted && (
           <p className="case-luck-banner">
-            🍀 Удача +35% на редкие деревья ещё {formatDuration((luckBoostUntil - Date.now()) / 1000)}
+            🍀 Удача +{luckBoostPercent}% на редкие деревья ещё {formatDuration((luckBoostUntil - Date.now()) / 1000)}
           </p>
         )}
         {freeCharges > 0 && (
@@ -179,7 +181,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, freeCharges, onOpen,
                   <TreeSprite species={species} stage={3} />
                 </span>
                 <span className="case-drop-name">{species.name}</span>
-                <span className="case-drop-chance">{dropChance(caseDef, drop.speciesId, boosted).toFixed(1)}%</span>
+                <span className="case-drop-chance">{dropChance(caseDef, drop.speciesId, boostPercent).toFixed(1)}%</span>
               </div>
             );
           })}

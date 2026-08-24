@@ -154,6 +154,7 @@ export default function App() {
           caseId={caseModalId}
           leaves={game.leaves}
           luckBoostUntil={game.luckBoostUntil}
+          luckBoostPercent={game.luckBoostPercent}
           freeCharges={game.freeCaseCharges[caseModalId] ?? 0}
           onOpen={openCase}
           onSell={sellInventoryTree}
