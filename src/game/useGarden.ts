@@ -263,9 +263,33 @@ export function useGarden() {
       incomePerSecRef.current = rate;
       setIncomePerSec(rate);
     };
-    tick();
-    const id = setInterval(tick, 500);
-    return () => clearInterval(id);
+
+    // A backgrounded tab or minimized Mini App can keep its timers running
+    // for a long time (Telegram's WebView especially) — ticking every
+    // second forever, screen off or not, is real battery drain for no
+    // visible benefit. earnForTrees integrates over any elapsed gap
+    // exactly, so pausing here loses nothing: resuming just runs one tick
+    // covering however long the app was hidden, same as a normal offline
+    // catch-up.
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (id !== null) return;
+      tick();
+      id = setInterval(tick, 1000);
+    };
+    const stop = () => {
+      if (id === null) return;
+      clearInterval(id);
+      id = null;
+    };
+    const handleVisibility = () => (document.hidden ? stop() : start());
+
+    start();
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   useEffect(() => {

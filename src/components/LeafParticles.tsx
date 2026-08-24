@@ -16,6 +16,11 @@ function LeafParticlesImpl() {
 
   useEffect(() => {
     const spawn = () => {
+      // A hidden tab/backgrounded Mini App still runs timers, so skip the
+      // work (and the CSS animation it would start) instead of just relying
+      // on the browser to throttle it — one less thing burning battery
+      // while nobody's looking at it.
+      if (document.hidden) return;
       const id = counter.current++;
       const particle: Particle = {
         id,

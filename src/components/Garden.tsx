@@ -1,5 +1,6 @@
 import type { PlantedTree } from '../types';
 import { Plot } from './Plot';
+import { LeafParticles } from './LeafParticles';
 import type { ActionType } from './SelectionToolbar';
 import { formatLeaves } from '../game/economy';
 
@@ -31,25 +32,28 @@ export function Garden({
   onToggleSelect,
 }: Props) {
   return (
-    <div className="garden-grid">
-      {trees.map((tree, i) => (
-        <Plot
-          key={tree ? tree.id : `empty-${i}`}
-          tree={tree}
-          now={now}
-          action={action}
-          selected={selected.has(i)}
-          onClickEmpty={() => onClickEmpty(i)}
-          onToggleSelect={() => onToggleSelect(i)}
-        />
-      ))}
-      {plots < maxPlots && (
-        <button className="plot plot-expand" disabled={leaves < expandCost || action !== null} onClick={onExpand}>
-          <span className="plot-empty-icon">🌱</span>
-          <span className="plot-empty-label">Новый участок</span>
-          <span className="plot-expand-cost">{formatLeaves(expandCost)} 🍃</span>
-        </button>
-      )}
+    <div className="garden-wrap">
+      <LeafParticles />
+      <div className="garden-grid">
+        {trees.map((tree, i) => (
+          <Plot
+            key={tree ? tree.id : `empty-${i}`}
+            tree={tree}
+            now={now}
+            action={action}
+            selected={selected.has(i)}
+            onClickEmpty={() => onClickEmpty(i)}
+            onToggleSelect={() => onToggleSelect(i)}
+          />
+        ))}
+        {plots < maxPlots && (
+          <button className="plot plot-expand" disabled={leaves < expandCost || action !== null} onClick={onExpand}>
+            <span className="plot-empty-icon">🌱</span>
+            <span className="plot-empty-label">Новый участок</span>
+            <span className="plot-expand-cost">{formatLeaves(expandCost)} 🍃</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

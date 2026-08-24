@@ -250,12 +250,17 @@
   box-shadow: 0 0 16px -6px var(--boost);
 }
 
+.garden-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+}
+
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 16px;
   width: 100%;
-  max-width: 900px;
 }
 
 .plot {

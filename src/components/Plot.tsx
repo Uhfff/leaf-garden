@@ -3,7 +3,6 @@ import { ALL_SPECIES_MAP } from '../data/allSpecies';
 import { formatLeaves, incomeRate, STAGE_NAMES, growthStage, formatDuration, treeMultiplierAt, UPGRADES, MAX_BOOST_LEVEL } from '../game/economy';
 import type { ActionType } from './SelectionToolbar';
 import { TreeSprite } from './TreeSprite';
-import { LeafParticles } from './LeafParticles';
 
 interface Props {
   tree: PlantedTree | null;
@@ -64,7 +63,6 @@ export function Plot({ tree, now, action, selected, onClickEmpty, onToggleSelect
       title={`${species.name} · ${STAGE_NAMES[stage]} · возраст ${formatDuration(ageSeconds)}`}
       onClick={selectMode ? onToggleSelect : undefined}
     >
-      <LeafParticles />
       <TreeSprite species={species} stage={stage} />
       <div className="plot-info">
         <span className="plot-name">{species.name}</span>
