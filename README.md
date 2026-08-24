@@ -17,7 +17,13 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   **exclusive case** rolls either one of 4 top regular species as a
   consolation prize or one of 5 **seasonal species that are never sold in
   the regular planting picker at any price** — the only way to ever own an
-  Ice Birch, Frost Pine, Golden Maple, Crystal Willow, or Phoenix Tree.
+  Ice Birch, Frost Pine, Golden Maple, Crystal Willow, or Phoenix Tree —
+  each priced so that odds × sell price is the same 300B across all five,
+  so every seasonal slot contributes equally to the case's expected value
+  regardless of how rare it is. That price lands exactly on the case's own
+  100B cost for the middle-rarity Golden Maple: the two commoner seasonal
+  trees sell for less than the case cost, the two rarer ones for more,
+  scaling with how unlikely they were to hit.
   Both share the same mechanics: odds shown up front, opening spins a
   scrolling reel (drawn from that same weighted roll, ending in the real
   result, with a few more items rolled past it so the strip doesn't dead-end
