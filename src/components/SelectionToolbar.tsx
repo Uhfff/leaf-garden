@@ -94,22 +94,26 @@ export function SelectionToolbar({
       );
     }
     return (
-      <div className="toolbar-icons">
-        <button className="toolbar-icon-btn" title="Уход за деревом (полить/удобрить/улучшить)" onClick={() => setCarePickerOpen(true)}>
-          🌱
-        </button>
-        <button className="toolbar-icon-btn" title="Удалить деревья" onClick={() => onStart('delete')}>
-          🗑
-        </button>
-        <button className="toolbar-icon-btn" title="Кейсы" onClick={() => setCasePickerOpen(true)}>
-          🎁
-        </button>
-        <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>
-          🎟
-        </button>
-        <button className="toolbar-icon-btn" title="Пригласить друзей" onClick={onOpenInvite}>
-          👥
-        </button>
+      <div className="toolbar-icons-split">
+        <div className="toolbar-icons">
+          <button className="toolbar-icon-btn" title="Уход за деревом (полить/удобрить/улучшить)" onClick={() => setCarePickerOpen(true)}>
+            🪴
+          </button>
+          <button className="toolbar-icon-btn" title="Удалить деревья" onClick={() => onStart('delete')}>
+            🗑
+          </button>
+        </div>
+        <div className="toolbar-icons">
+          <button className="toolbar-icon-btn" title="Кейсы" onClick={() => setCasePickerOpen(true)}>
+            🎁
+          </button>
+          <button className="toolbar-icon-btn" title="Промокод" onClick={onOpenPromo}>
+            🎟
+          </button>
+          <button className="toolbar-icon-btn" title="Пригласить друзей" onClick={onOpenInvite}>
+            👥
+          </button>
+        </div>
       </div>
     );
   }

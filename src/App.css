@@ -113,6 +113,12 @@
   justify-content: flex-end;
 }
 
+.toolbar-icons-split {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
 .toolbar-icons {
   display: flex;
   gap: 8px;
