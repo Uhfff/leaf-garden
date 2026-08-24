@@ -15,13 +15,14 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   the cheap ones (a 50%/24%/12%/6%/4%/2.5%/1.2%/0.3% spread — the top prize
   is a genuine long shot, not a modest one). The 100-billion-leaf
   **exclusive case** rolls either one of 4 top regular species as a
-  consolation prize or one of 5 **seasonal species that are never sold in
+  consolation prize or one of 6 **seasonal species that are never sold in
   the regular planting picker at any price** — the only way to ever own an
-  Ice Birch, Frost Pine, Golden Maple, Crystal Willow, or Phoenix Tree —
-  each priced so that odds × sell price is the same 3T across all five, so
-  every seasonal slot contributes equally to the case's expected value
-  regardless of how rare it is: 250B for Ice Birch up to 6T for Phoenix
-  Tree, all well past the case's own 100B cost.
+  Ice Birch, Frost Pine, Golden Maple, Crystal Willow, Phoenix Tree, or the
+  meme-tier "67" — each priced so that odds × sell price is the same 3T
+  across all six, so every seasonal slot contributes equally to the case's
+  expected value regardless of how rare it is: 250B for Ice Birch up to 15T
+  for "67" (rarer, and worth more, than Phoenix Tree), all well past the
+  case's own 100B cost.
   Both share the same mechanics: odds shown up front, opening spins a
   scrolling reel (drawn from that same weighted roll, ending in the real
   result, with a few more items rolled past it so the strip doesn't dead-end

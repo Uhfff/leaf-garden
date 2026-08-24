@@ -39,7 +39,7 @@ export const CASES: CaseDef[] = [
     name: 'Эксклюзивный кейс',
     image: ICONS.caseExclusive,
     cost: 100_000_000_000,
-    // 4 top-tier regular species as "consolation" prizes, plus all 5
+    // 4 top-tier regular species as "consolation" prizes, plus all 6
     // seasonal species that can *only* come from this case — never sold
     // in the regular planting picker at any price.
     drops: [
@@ -52,6 +52,7 @@ export const CASES: CaseDef[] = [
       { speciesId: 'golden_maple', weight: 3 },
       { speciesId: 'crystal_willow', weight: 1.5 },
       { speciesId: 'phoenix_tree', weight: 0.5 },
+      { speciesId: 'six_seven', weight: 0.2 },
     ],
   },
 ];

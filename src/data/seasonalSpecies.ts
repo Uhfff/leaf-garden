@@ -6,7 +6,7 @@ import type { TreeSpecies } from '../types';
  *  unless inventory already holds one).
  *
  *  `cost` doubles as the case-modal sell price, so it's set to keep
- *  weight * cost constant (3T) across all five — every seasonal slot
+ *  weight * cost constant (3T) across all six — every seasonal slot
  *  contributes the same expected value to the exclusive case regardless
  *  of its odds, scaled well past the 100B case cost so even the commonest
  *  seasonal drop is a windfall. */
@@ -58,13 +58,24 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
   {
     id: 'phoenix_tree',
     name: 'Дерево Феникса',
-    description: 'Тлеет, но никогда не сгорает — самый редкий трофей из всех.',
+    description: 'Тлеет, но никогда не сгорает.',
     cost: 6_000_000_000_000,
     baseIncome: 650_000,
     growthRate: 3.8,
     unlockAt: Infinity,
     trunk: '#4a1f1f',
     foliage: ['#ff6b35', '#ffb703'],
+  },
+  {
+    id: 'six_seven',
+    name: '67',
+    description: 'Никто толком не знает, что это значит, но оно существует — самый редкий и нелепый трофей кейса.',
+    cost: 15_000_000_000_000,
+    baseIncome: 2_200_000,
+    growthRate: 4.2,
+    unlockAt: Infinity,
+    trunk: '#3a1f5c',
+    foliage: ['#ff2fb0', '#00e5ff'],
   },
 ];
 
