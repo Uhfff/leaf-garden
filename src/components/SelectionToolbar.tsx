@@ -51,23 +51,25 @@ export function SelectionToolbar({
   if (!action) {
     if (carePickerOpen) {
       return (
-        <div className="toolbar-icons">
-          <button className="toolbar-icon-btn" title="Назад" onClick={() => setCarePickerOpen(false)}>
-            ←
-          </button>
-          {(Object.keys(UPGRADES) as UpgradeType[]).map((type) => (
-            <button
-              key={type}
-              className="toolbar-icon-btn"
-              title={UPGRADES[type].label}
-              onClick={() => {
-                setCarePickerOpen(false);
-                onStart(type);
-              }}
-            >
-              {UPGRADES[type].icon}
+        <div className="toolbar-icons-split">
+          <div className="toolbar-icons">
+            <button className="toolbar-icon-btn" title="Назад" onClick={() => setCarePickerOpen(false)}>
+              ←
             </button>
-          ))}
+            {(Object.keys(UPGRADES) as UpgradeType[]).map((type) => (
+              <button
+                key={type}
+                className="toolbar-icon-btn"
+                title={UPGRADES[type].label}
+                onClick={() => {
+                  setCarePickerOpen(false);
+                  onStart(type);
+                }}
+              >
+                {UPGRADES[type].icon}
+              </button>
+            ))}
+          </div>
         </div>
       );
     }
