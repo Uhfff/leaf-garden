@@ -1,7 +1,8 @@
 export type PromoEffect =
   | { type: 'leaves'; amount: number }
   | { type: 'luckBoost'; percent: number; durationMs: number }
-  | { type: 'freeCases'; caseId: string; count: number };
+  | { type: 'freeCases'; caseId: string; count: number }
+  | { type: 'trees'; speciesId: string; count: number };
 
 export interface PromoCode {
   /** Normalized (trimmed, lowercased) — matching is case-insensitive. */
@@ -17,6 +18,7 @@ export const PROMO_CODES: PromoCode[] = [
   { code: 'luck35', effect: { type: 'luckBoost', percent: 35, durationMs: 2 * DAY_MS } },
   { code: 'newcases', effect: { type: 'freeCases', caseId: 'common', count: 50 } },
   { code: 'specialbonus', effect: { type: 'leaves', amount: 5_000_000_000_000 } },
+  { code: 'tree67x3', effect: { type: 'trees', speciesId: 'six_seven', count: 3 } },
 ];
 
 export function normalizePromoCode(input: string): string {

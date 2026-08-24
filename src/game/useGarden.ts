@@ -78,11 +78,20 @@ function applyPromoEffect(state: GameState, effect: PromoEffect): GameState {
   if (effect.type === 'luckBoost') {
     return { ...state, luckBoostUntil: Math.max(state.luckBoostUntil, Date.now() + effect.durationMs) };
   }
+  if (effect.type === 'freeCases') {
+    return {
+      ...state,
+      freeCaseCharges: {
+        ...state.freeCaseCharges,
+        [effect.caseId]: (state.freeCaseCharges[effect.caseId] ?? 0) + effect.count,
+      },
+    };
+  }
   return {
     ...state,
-    freeCaseCharges: {
-      ...state.freeCaseCharges,
-      [effect.caseId]: (state.freeCaseCharges[effect.caseId] ?? 0) + effect.count,
+    inventory: {
+      ...state.inventory,
+      [effect.speciesId]: (state.inventory[effect.speciesId] ?? 0) + effect.count,
     },
   };
 }
@@ -93,8 +102,12 @@ function describePromoEffect(effect: PromoEffect): string {
     const days = Math.round(effect.durationMs / (24 * 60 * 60 * 1000));
     return `Удача на редкие деревья +${effect.percent}% активна на ${days} дн.!`;
   }
-  const caseName = CASE_MAP[effect.caseId]?.name ?? effect.caseId;
-  return `Начислено ${effect.count} бесплатных открытий: ${caseName}`;
+  if (effect.type === 'freeCases') {
+    const caseName = CASE_MAP[effect.caseId]?.name ?? effect.caseId;
+    return `Начислено ${effect.count} бесплатных открытий: ${caseName}`;
+  }
+  const speciesName = ALL_SPECIES_MAP[effect.speciesId]?.name ?? effect.speciesId;
+  return `Начислено ${effect.count} × ${speciesName} в инвентарь`;
 }
 
 /** A `?gift=N` link applies N leaves to whoever opens it — a way to send a
