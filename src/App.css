@@ -377,6 +377,11 @@
   fill: rgba(0, 0, 0, 0.35);
 }
 
+.tree-glow {
+  opacity: 0.4;
+  filter: blur(6px);
+}
+
 .tree-sway {
   animation: sway 4.5s ease-in-out infinite;
 }

@@ -50,6 +50,10 @@ function TreeSpriteImpl({ species, stage }: Props) {
   return (
     <svg viewBox="0 0 100 110" className="tree-sprite" role="img" aria-label={species.name}>
       <ellipse cx="50" cy="102" rx={26 * scale} ry="5" className="tree-shadow" />
+      {/* Static — sits behind the swaying canopy instead of on it, so the
+          blur is a one-time paint instead of something the browser has to
+          recompute on every frame the canopy rotates. */}
+      <circle cx="50" cy={100 - 46 * scale} r={22 * scale} className="tree-glow" fill={c1} />
       <g className="tree-sway" style={{ transformOrigin: '50px 100px' }}>
         <rect
           x={50 - 4 * scale}
