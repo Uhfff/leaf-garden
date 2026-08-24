@@ -6,17 +6,16 @@ import type { TreeSpecies } from '../types';
  *  unless inventory already holds one).
  *
  *  `cost` doubles as the case-modal sell price, so it's set to keep
- *  weight * cost constant (300B) across all five — every seasonal slot
+ *  weight * cost constant (3T) across all five — every seasonal slot
  *  contributes the same expected value to the exclusive case regardless
- *  of its odds. The 100B case cost lands exactly on golden_maple: the two
- *  commoner drops recoup less than the case, the two rarer ones recoup
- *  more, scaling with how unlikely they were to hit. */
+ *  of its odds, scaled well past the 100B case cost so even the commonest
+ *  seasonal drop is a windfall. */
 export const SEASONAL_SPECIES: TreeSpecies[] = [
   {
     id: 'ice_birch',
     name: 'Ледяная берёза',
     description: 'Кора из чистого льда, не тает даже летом — самый доступный трофей кейса.',
-    cost: 25_000_000_000,
+    cost: 250_000_000_000,
     baseIncome: 5_000,
     growthRate: 2.3,
     unlockAt: Infinity,
@@ -27,7 +26,7 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'frost_pine',
     name: 'Морозная сосна',
     description: 'Сверкает инеем круглый год — трофей из эксклюзивного кейса.',
-    cost: 50_000_000_000,
+    cost: 500_000_000_000,
     baseIncome: 15_000,
     growthRate: 2.6,
     unlockAt: Infinity,
@@ -38,7 +37,7 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'golden_maple',
     name: 'Золотой клён',
     description: 'Листва из чистого золота — не темнеет и не облетает.',
-    cost: 100_000_000_000,
+    cost: 1_000_000_000_000,
     baseIncome: 55_000,
     growthRate: 3.0,
     unlockAt: Infinity,
@@ -49,7 +48,7 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'crystal_willow',
     name: 'Хрустальная ива',
     description: 'Ветви из чистого хрусталя со звоном на ветру.',
-    cost: 200_000_000_000,
+    cost: 2_000_000_000_000,
     baseIncome: 190_000,
     growthRate: 3.4,
     unlockAt: Infinity,
@@ -60,7 +59,7 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     id: 'phoenix_tree',
     name: 'Дерево Феникса',
     description: 'Тлеет, но никогда не сгорает — самый редкий трофей из всех.',
-    cost: 600_000_000_000,
+    cost: 6_000_000_000_000,
     baseIncome: 650_000,
     growthRate: 3.8,
     unlockAt: Infinity,
