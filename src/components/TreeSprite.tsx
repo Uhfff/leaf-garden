@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useId } from 'react';
 import type { TreeSpecies } from '../types';
 import type { GrowthStage } from '../game/economy';
 
@@ -9,9 +9,43 @@ interface Props {
 
 const SCALE_BY_STAGE = [0.45, 0.65, 0.85, 1];
 
+/** The "67" meme tree isn't a tree at all — just the digits, filled with the
+ *  species' own foliage gradient so it still reads as "made of leaves"
+ *  rather than plain text. */
+function DigitSprite({ species, scale, gradientId }: { species: TreeSpecies; scale: number; gradientId: string }) {
+  const [c1, c2] = species.foliage;
+  return (
+    <svg viewBox="0 0 100 110" className="tree-sprite" role="img" aria-label={species.name}>
+      <ellipse cx="50" cy="102" rx={26 * scale} ry="5" className="tree-shadow" />
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={c2} />
+          <stop offset="100%" stopColor={c1} />
+        </linearGradient>
+      </defs>
+      <text
+        x="50"
+        y={100 - 30 * scale}
+        textAnchor="middle"
+        fontFamily="var(--font-display)"
+        fontWeight="800"
+        fontSize={40 * scale}
+        fill={`url(#${gradientId})`}
+      >
+        67
+      </text>
+    </svg>
+  );
+}
+
 function TreeSpriteImpl({ species, stage }: Props) {
   const scale = SCALE_BY_STAGE[stage];
   const [c1, c2] = species.foliage;
+  const gradientId = useId();
+
+  if (species.id === 'six_seven') {
+    return <DigitSprite species={species} scale={scale} gradientId={gradientId} />;
+  }
 
   return (
     <svg viewBox="0 0 100 110" className="tree-sprite" role="img" aria-label={species.name}>
