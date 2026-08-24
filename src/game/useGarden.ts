@@ -22,7 +22,13 @@ import {
 
 const STORAGE_KEY = 'leaf-garden-save-v1';
 const SAVE_INTERVAL_MS = 5000;
-const STATS_INTERVAL_MS = 60_000;
+// Each report is a KV write on the bot's side, and Cloudflare's free tier
+// only allows 1,000 writes/day total across every player combined — a
+// handful of people with the game open for a while at 60s each blew
+// through half the day's quota. 10 minutes keeps the bot's /stats numbers
+// reasonably fresh without risking the whole KV store (referrals, promo
+// codes, broadcast all share it) going down for the rest of the day.
+const STATS_INTERVAL_MS = 10 * 60_000;
 const OFFLINE_CAP_MS = 12 * 60 * 60 * 1000;
 
 export const START_PLOTS = 6;
@@ -294,6 +300,7 @@ export function useGarden() {
 
   useEffect(() => {
     const report = () => {
+      if (document.hidden) return;
       const current = gameRef.current;
       reportStats({
         leaves: current.leaves,
@@ -304,7 +311,11 @@ export function useGarden() {
     };
     report();
     const id = setInterval(report, STATS_INTERVAL_MS);
-    return () => clearInterval(id);
+    document.addEventListener('visibilitychange', report);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', report);
+    };
   }, []);
 
   useEffect(() => {
