@@ -66,6 +66,7 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
 
 const GIFT_MAX = 1e15;
 const USED_VOUCHERS_KEY = 'leaf-garden-used-vouchers';
+const REFERRAL_BONUS = 5_000_000_000_000;
 
 /** Applies any promo effect to a GameState — shared by the `?gift=` link
  *  path and the in-game code-entry modal, so a code pays out identically
@@ -107,7 +108,12 @@ function describePromoEffect(effect: PromoEffect): string {
  *  reply) instead of a raw number, for any promo effect — resolved through
  *  the same promo table and filed under the same `promo:` key the in-game
  *  code-entry modal uses, so redeeming a code via the bot link and via
- *  typing it in-game are the same redemption, not two. */
+ *  typing it in-game are the same redemption, not two.
+ *
+ *  `?gift=ref:<referrerId>:<newUserId>` is how the bot pays out a referral
+ *  bonus: the pair of Telegram ids makes each referral its own voucher, so
+ *  a referrer inviting several friends gets paid for each of them, while
+ *  the same friend's link can't be replayed for a second bonus. */
 function readVoucherFromUrl(): { code: string; effect: PromoEffect } | null {
   if (typeof window === 'undefined') return null;
   const raw = new URLSearchParams(window.location.search).get('gift');
@@ -116,6 +122,9 @@ function readVoucherFromUrl(): { code: string; effect: PromoEffect } | null {
     const value = Math.floor(Number(raw));
     if (!Number.isFinite(value) || value <= 0) return null;
     return { code: raw, effect: { type: 'leaves', amount: Math.min(value, GIFT_MAX) } };
+  }
+  if (/^ref:\d+:\d+$/.test(raw.trim())) {
+    return { code: raw, effect: { type: 'leaves', amount: REFERRAL_BONUS } };
   }
   const promo = findPromoCode(raw);
   if (!promo) return null;
