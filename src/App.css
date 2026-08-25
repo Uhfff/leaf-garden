@@ -400,8 +400,15 @@
    guarantees every tree's infinite sway/sparkle animation is actually
    halted rather than just invisible, in case a WebView keeps compositing
    a "minimized" Mini App longer than a normal hidden browser tab does. */
+/* A modal's opaque backdrop fully covers the garden underneath it, and a
+   plot scrolled outside the viewport is just as unseen — neither needs its
+   tree animating on the compositor for nobody to look at. */
 body.app-hidden .tree-sway,
-body.app-hidden .tree-sparkle {
+body.app-hidden .tree-sparkle,
+body.modal-open .tree-sway,
+body.modal-open .tree-sparkle,
+.plot-offscreen .tree-sway,
+.plot-offscreen .tree-sparkle {
   animation-play-state: paused;
 }
 

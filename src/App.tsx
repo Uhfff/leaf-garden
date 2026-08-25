@@ -60,6 +60,15 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', sync);
   }, []);
 
+  const anyModalOpen = openPlot !== null || caseModalId !== null || promoModalOpen || inviteModalOpen;
+
+  // The garden is fully covered by a modal's opaque backdrop while one is
+  // open — same idea as .app-hidden, just triggered by an in-app overlay
+  // instead of the tab losing visibility.
+  useEffect(() => {
+    document.body.classList.toggle('modal-open', anyModalOpen);
+  }, [anyModalOpen]);
+
   const exitSelection = () => {
     setAction(null);
     setConfirmingDelete(false);
