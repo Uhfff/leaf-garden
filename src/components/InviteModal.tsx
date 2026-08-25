@@ -28,7 +28,7 @@ export function InviteModal({ onClose }: Props) {
         </div>
         {link ? (
           <>
-            <p>За каждого друга, который откроет сад по вашей ссылке, вы получите 5 триллионов 🍃.</p>
+            <p>За каждого друга, который откроет сад по вашей ссылке, вы получите 2.5 миллиарда 🍃.</p>
             <div className="promo-form">
               <input className="promo-input" type="text" value={link} readOnly onFocus={(e) => e.target.select()} />
               <button className="toolbar-primary" onClick={handleCopy}>

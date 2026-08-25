@@ -13,16 +13,16 @@ centuries-old oak becomes a real source of income. The currency is leaves.
 - **Two cases**, picked from a toolbar submenu. The 2,000-leaf **common
   case** rolls any of the eight regular species, steeply weighted toward
   the cheap ones (a 50%/24%/12%/6%/4%/2.5%/1.2%/0.3% spread — the top prize
-  is a genuine long shot, not a modest one). The 100-billion-leaf
+  is a genuine long shot, not a modest one). The 50-million-leaf
   **exclusive case** rolls either one of 4 top regular species as a
   consolation prize or one of 6 **seasonal species that are never sold in
   the regular planting picker at any price** — the only way to ever own an
   Ice Birch, Frost Pine, Golden Maple, Crystal Willow, Phoenix Tree, or the
-  meme-tier "67" — each priced so that odds × sell price is the same 3T
+  meme-tier "67" — each priced so that odds × sell price is the same 1.5B
   across all six, so every seasonal slot contributes equally to the case's
-  expected value regardless of how rare it is: 250B for Ice Birch up to 15T
-  for "67" (rarer, and worth more, than Phoenix Tree), all well past the
-  case's own 100B cost. That sell price is deliberately its own number,
+  expected value regardless of how rare it is: 125M for Ice Birch up to
+  7.5B for "67" (rarer, and worth more, than Phoenix Tree), all well past
+  the case's own 50M cost. That sell price is deliberately its own number,
   separate from what growing the tree costs to maintain — the two used to
   be the same field, which meant boosting a seasonal tree even once cost
   trillions and its own base income needed months to pay back what it
@@ -90,7 +90,7 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   Telegram, a note pointing at the bot instead (there's no id to build a
   link from in a plain browser tab). `/invite` in the bot returns the same
   link. When someone opens the bot through it, the bot sends the referrer a
-  gift button worth 5 trillion leaves — `?gift=ref:<referrerId>:<newUserId>`,
+  gift button worth 2.5 billion leaves — `?gift=ref:<referrerId>:<newUserId>`,
   so each invited friend is its own voucher (one payout per friend, replaying
   the same friend's link again pays nothing, same as any other gift link).
 - **Playable as a Telegram Mini App.** Loads the Telegram Web App SDK and,

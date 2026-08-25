@@ -75,7 +75,11 @@ function earnForTrees(trees: (PlantedTree | null)[], fromMs: number, toMs: numbe
 
 const GIFT_MAX = 1e15;
 const USED_VOUCHERS_KEY = 'leaf-garden-used-vouchers';
-const REFERRAL_BONUS = 5_000_000_000_000;
+// Was 5T — proportionally rescaled alongside the exclusive case (100B→50M,
+// a /2000 cut) so a referral stays a generous but not economy-breaking
+// bonus: in the same ballpark as a mid-tier seasonal tree's sell price,
+// not an instant shortcut past the whole case system.
+const REFERRAL_BONUS = 2_500_000_000;
 
 /** Applies any promo effect to a GameState — shared by the `?gift=` link
  *  path and the in-game code-entry modal, so a code pays out identically

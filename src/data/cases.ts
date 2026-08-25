@@ -39,7 +39,12 @@ export const CASES: CaseDef[] = [
     id: 'exclusive',
     name: 'Эксклюзивный кейс',
     image: ICONS.caseExclusive,
-    cost: 100_000_000_000,
+    // Was 100B, calibrated for the old runaway income formula (see
+    // economy.ts) where that was reachable within a day or so. Under the
+    // fixed, day-paced curve it would have been effectively unreachable —
+    // 50M sits at roughly 150x the top regular tree's own cost (sequoia,
+    // 320K), a real but attainable next-tier goal instead of a wall.
+    cost: 50_000_000,
     // 4 top-tier regular species as "consolation" prizes, plus all 6
     // seasonal species that can *only* come from this case — never sold
     // in the regular planting picker at any price.
