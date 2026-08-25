@@ -36,10 +36,16 @@ export const MAX_PLOTS = 30;
 export const PLOT_BASE_COST = 200;
 export const PLOT_SCALE = 2.2;
 
+const STARTING_LEAVES = 20;
+
+// Bump when a formula change is severe enough to need recalculateEconomy
+// to run again on saves that already went through an earlier version.
+const CURRENT_ECONOMY_VERSION = 1;
+
 function freshState(): GameState {
   return {
-    leaves: 20,
-    totalEarned: 20,
+    leaves: STARTING_LEAVES,
+    totalEarned: STARTING_LEAVES,
     plots: START_PLOTS,
     trees: Array(START_PLOTS).fill(null),
     lastTick: Date.now(),
@@ -47,6 +53,44 @@ function freshState(): GameState {
     luckBoostUntil: 0,
     luckBoostPercent: 0,
     freeCaseCharges: {},
+    economyVersion: CURRENT_ECONOMY_VERSION,
+  };
+}
+
+/** One-time save migration for the income-formula rewrite (unbounded
+ *  sqrt(age/minute) → sqrt(age/day)) and the case/sell-price rescale.
+ *  There's no way to honestly replay a save's full history — trees sold
+ *  or removed long ago, past promo redemptions, and old case payouts left
+ *  no ledger behind, only the already-summed `leaves`/`totalEarned`
+ *  numbers this function is replacing. Instead it treats the *current*
+ *  garden as the source of truth: every still-planted tree's lifetime
+ *  earnings are recomputed under the new formula from its real
+ *  `plantedAt`, net of what was actually spent on it (`invested`, which
+ *  is a real historical record unaffected by any formula change). That's
+ *  a fair "what this garden has actually earned under real rules" number,
+ *  even though it can't reconstruct exactly what was banked and spent
+ *  along the way. Floored at STARTING_LEAVES so nobody ends up ruined by
+ *  their own past spending under the old, cheaper cost curve. */
+function recalculateEconomy(state: GameState): GameState {
+  const now = Date.now();
+  let rawEarned = 0;
+  let totalInvested = 0;
+  let maxUnlockNeeded = 0;
+  for (const tree of state.trees) {
+    if (!tree) continue;
+    const species = ALL_SPECIES_MAP[tree.speciesId];
+    if (!species) continue;
+    rawEarned += earningsForTree(species, tree, tree.plantedAt, now);
+    totalInvested += tree.invested;
+    if (Number.isFinite(species.unlockAt)) {
+      maxUnlockNeeded = Math.max(maxUnlockNeeded, species.unlockAt);
+    }
+  }
+  return {
+    ...state,
+    leaves: Math.max(STARTING_LEAVES, STARTING_LEAVES + rawEarned - totalInvested),
+    totalEarned: Math.max(STARTING_LEAVES, rawEarned, maxUnlockNeeded),
+    economyVersion: CURRENT_ECONOMY_VERSION,
   };
 }
 
@@ -213,7 +257,8 @@ function loadSave(): {
     const now = Date.now();
     const from = Math.max(parsed.lastTick, now - OFFLINE_CAP_MS);
     const earnings = earnForTrees(trees, from, now);
-    const state: GameState = {
+    const needsMigration = (parsed.economyVersion ?? 0) < CURRENT_ECONOMY_VERSION;
+    let state: GameState = {
       ...parsed,
       trees,
       inventory: parsed.inventory ?? {},
@@ -226,7 +271,13 @@ function loadSave(): {
       totalEarned: parsed.totalEarned + earnings,
       lastTick: now,
     };
-    return { state: finalize(state), offlineEarnings: earnings, giftMessage, giftCode };
+    // recalculateEconomy replaces leaves/totalEarned outright with a fresh
+    // recompute through `now`, so the offline earnings just merged above
+    // get superseded rather than double-counted — and the usual "earned
+    // while away" toast would be a confusing thing to show on the one load
+    // where the whole balance just got recalculated.
+    if (needsMigration) state = recalculateEconomy(state);
+    return { state: finalize(state), offlineEarnings: needsMigration ? 0 : earnings, giftMessage, giftCode };
   } catch {
     return { state: finalize(freshState()), offlineEarnings: 0, giftMessage, giftCode };
   }

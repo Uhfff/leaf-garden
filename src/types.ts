@@ -44,4 +44,8 @@ export interface GameState {
   luckBoostPercent: number;
   /** Free case opens banked by case id, spent before leaves are charged. */
   freeCaseCharges: Record<string, number>;
+  /** Bumped whenever a balance-affecting formula change needs a one-time
+   *  save migration (see recalculateEconomy in useGarden.ts). Absent on
+   *  any save from before this field existed. */
+  economyVersion?: number;
 }
