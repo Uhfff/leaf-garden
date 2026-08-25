@@ -296,6 +296,7 @@ export function useGarden() {
   const [giftMessage] = useState(initial.current.giftMessage);
   const [giftCode] = useState(initial.current.giftCode);
   const [incomePerSec, setIncomePerSec] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const gameRef = useRef(game);
   gameRef.current = game;
   const incomePerSecRef = useRef(0);
@@ -323,6 +324,7 @@ export function useGarden() {
       }, 0);
       incomePerSecRef.current = rate;
       setIncomePerSec(rate);
+      setNow(now);
     };
 
     // A backgrounded tab or minimized Mini App can keep its timers running
@@ -628,6 +630,12 @@ export function useGarden() {
   return {
     game,
     incomePerSec,
+    // Sourced from this hook's own tick instead of a second, independently
+    // scheduled setInterval (the old useNow hook) — two timers nominally on
+    // the same 1000ms cadence still drift apart from each other over time,
+    // so the app was re-rendering the whole garden up to twice a second
+    // instead of once.
+    now,
     offlineEarnings,
     giftMessage,
     plantTree,

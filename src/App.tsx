@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useGarden, MAX_PLOTS, plotCost } from './game/useGarden';
-import { useNow } from './hooks/useNow';
 import { HUD } from './components/HUD';
 import { Garden } from './components/Garden';
 import { PlantModal } from './components/PlantModal';
@@ -15,6 +14,7 @@ export default function App() {
   const {
     game,
     incomePerSec,
+    now,
     offlineEarnings,
     giftMessage,
     plantTree,
@@ -29,7 +29,6 @@ export default function App() {
     boostCostFor,
     refundFor,
   } = useGarden();
-  const now = useNow();
   const [openPlot, setOpenPlot] = useState<number | null>(null);
   const [caseModalId, setCaseModalId] = useState<string | null>(null);
   const [promoModalOpen, setPromoModalOpen] = useState(false);
