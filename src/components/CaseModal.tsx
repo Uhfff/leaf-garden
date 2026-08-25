@@ -10,6 +10,7 @@ interface Props {
   leaves: number;
   luckBoostUntil: number;
   luckBoostPercent: number;
+  luckBoostDisplayPercent: number;
   freeCharges: number;
   onOpen: (caseId: string) => { speciesId: string; speciesName: string } | null;
   onSell: (speciesId: string) => number | null;
@@ -47,7 +48,17 @@ function buildReel(caseDef: CaseDef, winner: TreeSpecies, boostPercent: number):
 // ended up mostly off-screen, showing empty space instead of trees.
 const LANDING_OFFSET = VIEWPORT_WIDTH / 2 - (WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2);
 
-export function CaseModal({ caseId, leaves, luckBoostUntil, luckBoostPercent, freeCharges, onOpen, onSell, onClose }: Props) {
+export function CaseModal({
+  caseId,
+  leaves,
+  luckBoostUntil,
+  luckBoostPercent,
+  luckBoostDisplayPercent,
+  freeCharges,
+  onOpen,
+  onSell,
+  onClose,
+}: Props) {
   const caseDef = CASE_MAP[caseId];
   const [reel, setReel] = useState<TreeSpecies[] | null>(null);
   const [moved, setMoved] = useState(false);
@@ -115,7 +126,7 @@ export function CaseModal({ caseId, leaves, luckBoostUntil, luckBoostPercent, fr
 
         {boosted && (
           <p className="case-luck-banner">
-            🍀 Удача +{luckBoostPercent}% на редкие деревья ещё {formatDuration((luckBoostUntil - Date.now()) / 1000)}
+            🍀 Удача +{luckBoostDisplayPercent}% на редкие деревья ещё {formatDuration((luckBoostUntil - Date.now()) / 1000)}
           </p>
         )}
         {freeCharges > 0 && (

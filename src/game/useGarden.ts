@@ -7,6 +7,7 @@ import { reportStats } from '../telegram';
 import {
   costForLevels,
   earningsForTree,
+  formatDuration,
   formatLeaves,
   incomeRate,
   levelsWithinCap,
@@ -52,6 +53,7 @@ function freshState(): GameState {
     inventory: {},
     luckBoostUntil: 0,
     luckBoostPercent: 0,
+    luckBoostDisplayPercent: 0,
     freeCaseCharges: {},
     economyVersion: CURRENT_ECONOMY_VERSION,
   };
@@ -134,12 +136,18 @@ function applyPromoEffect(state: GameState, effect: PromoEffect): GameState {
   }
   if (effect.type === 'luckBoost') {
     // A currently-active, stronger boost isn't downgraded by a weaker code —
-    // but its duration still extends either way.
-    const currentPercent = state.luckBoostUntil > Date.now() ? state.luckBoostPercent : 0;
+    // but its duration still extends either way. The displayed percent
+    // travels with whichever real percent ends up winning, so the banner
+    // never shows a number that doesn't belong to the boost actually applied.
+    const active = state.luckBoostUntil > Date.now();
+    const currentPercent = active ? state.luckBoostPercent : 0;
+    const currentDisplay = active ? state.luckBoostDisplayPercent : 0;
+    const newWins = effect.percent >= currentPercent;
     return {
       ...state,
       luckBoostUntil: Math.max(state.luckBoostUntil, Date.now() + effect.durationMs),
       luckBoostPercent: Math.max(currentPercent, effect.percent),
+      luckBoostDisplayPercent: newWins ? (effect.displayPercent ?? effect.percent) : currentDisplay,
     };
   }
   if (effect.type === 'freeCases') {
@@ -163,8 +171,8 @@ function applyPromoEffect(state: GameState, effect: PromoEffect): GameState {
 function describePromoEffect(effect: PromoEffect): string {
   if (effect.type === 'leaves') return `Начислено ${formatLeaves(effect.amount)} 🍃`;
   if (effect.type === 'luckBoost') {
-    const days = Math.round(effect.durationMs / (24 * 60 * 60 * 1000));
-    return `Удача на редкие деревья +${effect.percent}% активна на ${days} дн.!`;
+    const shown = effect.displayPercent ?? effect.percent;
+    return `Удача на редкие деревья +${shown}% активна ${formatDuration(effect.durationMs / 1000)}!`;
   }
   if (effect.type === 'freeCases') {
     const caseName = CASE_MAP[effect.caseId]?.name ?? effect.caseId;
@@ -266,6 +274,7 @@ function loadSave(): {
       // Older saves could have an active boost with no stored percent — 35
       // was the only strength that ever existed before per-code percents.
       luckBoostPercent: parsed.luckBoostPercent ?? 35,
+      luckBoostDisplayPercent: parsed.luckBoostDisplayPercent ?? parsed.luckBoostPercent ?? 35,
       freeCaseCharges: parsed.freeCaseCharges ?? {},
       leaves: parsed.leaves + earnings,
       totalEarned: parsed.totalEarned + earnings,

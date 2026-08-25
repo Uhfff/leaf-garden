@@ -42,6 +42,10 @@ export interface GameState {
   luckBoostUntil: number;
   /** Weight bonus applied while luckBoostUntil is active — meaningless once it lapses. */
   luckBoostPercent: number;
+  /** What the UI shows for the active boost — usually equal to
+   *  luckBoostPercent, but a promo can understate it (see PromoEffect
+   *  'luckBoost') while the real math still uses the full percent. */
+  luckBoostDisplayPercent: number;
   /** Free case opens banked by case id, spent before leaves are charged. */
   freeCaseCharges: Record<string, number>;
   /** Bumped whenever a balance-affecting formula change needs a one-time
