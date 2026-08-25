@@ -382,11 +382,12 @@
   filter: blur(6px);
 }
 
-/* Diagnostic: disabled outright (not just paused off-screen) to test
-   whether this continuous per-tree transform animation is what's actually
-   heating iPhones during active play — every other angle (backdrop-filter,
-   particles, glow, timers, off-screen pausing) has already been ruled out
-   or fixed without resolving it. Re-enable once confirmed either way. */
+/* Confirmed on-device: this continuous per-tree transform animation,
+   running on every planted tree at once, was the actual source of
+   iPhones heating up during active play — every other angle
+   (backdrop-filter, particles, glow, timers, off-screen pausing) had
+   already been ruled out or fixed without resolving it. Left off
+   permanently; the battery cost isn't worth the sway. */
 .tree-sway {
   animation: none;
 }
