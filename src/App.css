@@ -382,8 +382,13 @@
   filter: blur(6px);
 }
 
+/* Diagnostic: disabled outright (not just paused off-screen) to test
+   whether this continuous per-tree transform animation is what's actually
+   heating iPhones during active play — every other angle (backdrop-filter,
+   particles, glow, timers, off-screen pausing) has already been ruled out
+   or fixed without resolving it. Re-enable once confirmed either way. */
 .tree-sway {
-  animation: sway 4.5s ease-in-out infinite;
+  animation: none;
 }
 
 @keyframes sway {
@@ -392,7 +397,7 @@
 }
 
 .tree-sparkle {
-  animation: sparkle 1.8s ease-in-out infinite;
+  animation: none;
 }
 
 /* Belt-and-suspenders alongside the JS-side visibility pausing: most
