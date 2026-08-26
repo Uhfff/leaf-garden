@@ -14,15 +14,19 @@ centuries-old oak becomes a real source of income. The currency is leaves.
   case** rolls any of the eight regular species, steeply weighted toward
   the cheap ones (a 50%/24%/12%/6%/4%/2.5%/1.2%/0.3% spread — the top prize
   is a genuine long shot, not a modest one). The 50-million-leaf
-  **exclusive case** rolls either one of 4 top regular species as a
-  consolation prize or one of 6 **seasonal species that are never sold in
-  the regular planting picker at any price** — the only way to ever own an
-  Ice Birch, Frost Pine, Golden Maple, Crystal Willow, Phoenix Tree, or the
-  meme-tier "67" — each priced so that odds × sell price is the same 1.5B
-  across all six, so every seasonal slot contributes equally to the case's
-  expected value regardless of how rare it is: 125M for Ice Birch up to
-  7.5B for "67" (rarer, and worth more, than Phoenix Tree), all well past
-  the case's own 50M cost. That sell price is deliberately its own number,
+  **"Звёздный кейс" (Starry Case)** rolls either one of 4 top regular
+  species as a consolation prize or one of 6 **exclusive species that are
+  never sold in the regular planting picker at any price** — currently
+  Moon Birch, Comet Pine, Starlight Maple, Nebula Willow, Meteor Oak, or
+  the top prize, Supernova — each priced so that odds × sell price is the
+  same 1.5B across all six, so every exclusive slot contributes equally to
+  the case's expected value regardless of how rare it is: 125M for Moon
+  Birch up to 7.5B for Supernova, all well past the case's own 50M cost.
+  The case has been re-themed once already — its original six-tree lineup
+  (Ice Birch, Frost Pine, Golden Maple, Crystal Willow, Phoenix Tree, and
+  the meme-tier "67") was retired from the drop table but is still defined
+  in `seasonalSpecies.ts` so anyone who already won one keeps it. That
+  sell price is deliberately its own number,
   separate from what growing the tree costs to maintain — the two used to
   be the same field, which meant boosting a seasonal tree even once cost
   trillions and its own base income needed months to pay back what it

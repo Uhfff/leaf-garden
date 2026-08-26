@@ -17,6 +17,10 @@ import type { TreeSpecies } from '../types';
  *  scaled down from an original 3T alongside the exclusive case's own
  *  cost dropping from 100B to 50M, so the payout stays proportional to
  *  what the case itself costs to open. */
+// The original six (ice_birch through six_seven) were retired from the
+// exclusive case's drop table when it was re-themed — no longer
+// obtainable from anywhere, but kept here so anyone who already owns one
+// keeps it working (ALL_SPECIES_MAP still needs to resolve its id).
 export const SEASONAL_SPECIES: TreeSpecies[] = [
   {
     id: 'ice_birch',
@@ -106,6 +110,90 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
   },
 ];
 
+// The current lineup for the re-themed exclusive case — same cost/income
+// tiers as the retired set above (same balance, freshly re-skinned), a
+// cosmic theme instead of the old ice/gold/phoenix one.
+export const CURRENT_EXCLUSIVE_SPECIES: TreeSpecies[] = [
+  {
+    id: 'moon_birch',
+    name: 'Лунная берёза',
+    description: 'Кора отражает лунный свет — светится в темноте сада.',
+    cost: 1_400_000,
+    sellPrice: 125_000_000,
+    baseIncome: 1_650,
+    growthRate: 2.3,
+    unlockAt: Infinity,
+    trunk: '#9aa5b8',
+    foliage: ['#dde5f2', '#f3f6fc'],
+  },
+  {
+    id: 'comet_pine',
+    name: 'Кометная сосна',
+    description: 'Хвоя тянется огненным хвостом, будто за деревом летит комета.',
+    cost: 6_000_000,
+    sellPrice: 250_000_000,
+    baseIncome: 4_200,
+    growthRate: 2.6,
+    unlockAt: Infinity,
+    trunk: '#3a5a5e',
+    foliage: ['#4fd1c5', '#a8f0e8'],
+  },
+  {
+    id: 'starlight_maple',
+    name: 'Звёздный клён',
+    description: 'Листья мерцают, как звёзды в ясном небе.',
+    cost: 25_000_000,
+    sellPrice: 500_000_000,
+    baseIncome: 10_800,
+    growthRate: 3.0,
+    unlockAt: Infinity,
+    trunk: '#20264a',
+    foliage: ['#6ea8fe', '#c9dbff'],
+  },
+  {
+    id: 'nebula_willow',
+    name: 'Туманная ива',
+    description: 'Ветви окутаны туманностью — цвет меняется на глазах.',
+    cost: 110_000_000,
+    sellPrice: 1_000_000_000,
+    baseIncome: 27_500,
+    growthRate: 3.4,
+    unlockAt: Infinity,
+    trunk: '#4a2f5e',
+    foliage: ['#c77dff', '#f3c4fb'],
+  },
+  {
+    id: 'meteor_oak',
+    name: 'Метеоритный дуб',
+    description: 'Ствол испещрён метеоритными шрамами, но дерево живее всех живых.',
+    cost: 470_000_000,
+    sellPrice: 3_000_000_000,
+    baseIncome: 70_000,
+    growthRate: 3.8,
+    unlockAt: Infinity,
+    trunk: '#3a2f2f',
+    foliage: ['#ff8c42', '#ffb37a'],
+  },
+  {
+    id: 'supernova',
+    name: 'Сверхновая',
+    description: 'Вспышка в момент максимальной яркости — самый редкий трофей нового кейса.',
+    cost: 2_000_000_000,
+    sellPrice: 7_500_000_000,
+    baseIncome: 178_000,
+    growthRate: 4.2,
+    unlockAt: Infinity,
+    trunk: '#5a4a1f',
+    foliage: ['#fff4b8', '#ffd23f'],
+  },
+];
+
+/** Every exclusive-case-only species that could actually show up in a save
+ *  — retired ones (still owned by whoever won them) plus the current
+ *  lineup. Use this (not SEASONAL_SPECIES alone) anywhere that needs to
+ *  resolve or list an owned exclusive tree regardless of when it dropped. */
+export const ALL_SEASONAL_SPECIES: TreeSpecies[] = [...SEASONAL_SPECIES, ...CURRENT_EXCLUSIVE_SPECIES];
+
 export const SEASONAL_SPECIES_MAP: Record<string, TreeSpecies> = Object.fromEntries(
-  SEASONAL_SPECIES.map((s) => [s.id, s]),
+  ALL_SEASONAL_SPECIES.map((s) => [s.id, s]),
 );

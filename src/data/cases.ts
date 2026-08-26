@@ -37,7 +37,7 @@ export const CASES: CaseDef[] = [
   },
   {
     id: 'exclusive',
-    name: 'Эксклюзивный кейс',
+    name: 'Звёздный кейс',
     image: ICONS.caseExclusive,
     // Was 100B, calibrated for the old runaway income formula (see
     // economy.ts) where that was reachable within a day or so. Under the
@@ -45,20 +45,22 @@ export const CASES: CaseDef[] = [
     // 50M sits at roughly 150x the top regular tree's own cost (sequoia,
     // 320K), a real but attainable next-tier goal instead of a wall.
     cost: 50_000_000,
-    // 4 top-tier regular species as "consolation" prizes, plus all 6
-    // seasonal species that can *only* come from this case — never sold
-    // in the regular planting picker at any price.
+    // Re-themed lineup: same 4 top-tier regular "consolation" species, but
+    // the 6 exclusive-only slots now point at CURRENT_EXCLUSIVE_SPECIES
+    // (cosmic-themed) instead of the original ice/gold/phoenix set, which
+    // was retired — see seasonalSpecies.ts. Same weights as before, so the
+    // odds feel unchanged even though the prizes are new.
     drops: [
       { speciesId: 'sakura', weight: 30 },
       { speciesId: 'spruce', weight: 22 },
       { speciesId: 'baobab', weight: 15 },
       { speciesId: 'sequoia', weight: 10 },
-      { speciesId: 'ice_birch', weight: 12 },
-      { speciesId: 'frost_pine', weight: 6 },
-      { speciesId: 'golden_maple', weight: 3 },
-      { speciesId: 'crystal_willow', weight: 1.5 },
-      { speciesId: 'phoenix_tree', weight: 0.5 },
-      { speciesId: 'six_seven', weight: 0.2 },
+      { speciesId: 'moon_birch', weight: 12 },
+      { speciesId: 'comet_pine', weight: 6 },
+      { speciesId: 'starlight_maple', weight: 3 },
+      { speciesId: 'nebula_willow', weight: 1.5 },
+      { speciesId: 'meteor_oak', weight: 0.5 },
+      { speciesId: 'supernova', weight: 0.2 },
     ],
   },
 ];

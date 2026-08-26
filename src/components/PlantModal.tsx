@@ -1,5 +1,5 @@
 import { SPECIES } from '../data/species';
-import { SEASONAL_SPECIES } from '../data/seasonalSpecies';
+import { ALL_SEASONAL_SPECIES } from '../data/seasonalSpecies';
 import type { PlantedTree } from '../types';
 import { formatLeaves, nextCost } from '../game/economy';
 import { TreeSprite } from './TreeSprite';
@@ -16,7 +16,7 @@ interface Props {
 export function PlantModal({ leaves, totalEarned, trees, inventory, onPick, onClose }: Props) {
   // Seasonal trees are exclusive-case-only — they never appear here for
   // purchase, only once you've actually won one and have it banked free.
-  const ownedSeasonal = SEASONAL_SPECIES.filter((s) => (inventory[s.id] ?? 0) > 0);
+  const ownedSeasonal = ALL_SEASONAL_SPECIES.filter((s) => (inventory[s.id] ?? 0) > 0);
   const displaySpecies = [...SPECIES, ...ownedSeasonal];
 
   return (
