@@ -44,8 +44,8 @@ function DigitSprite({ species, scale, gradientId }: { species: TreeSpecies; sca
  *  "portrait ornament" sitting where the foliage normally goes, same
  *  shadow and scale-by-stage as every other tree. */
 function PhotoSprite({ scale, clipId }: { scale: number; clipId: string }) {
-  const r = 22 * scale;
-  const cy = 100 - 46 * scale;
+  const r = 46 * scale;
+  const cy = 98 - r;
   return (
     <svg viewBox="0 0 100 110" className="tree-sprite" role="img" aria-label="Коч Брат">
       <ellipse cx="50" cy="102" rx={26 * scale} ry="5" className="tree-shadow" />
