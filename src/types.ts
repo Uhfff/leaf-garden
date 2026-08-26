@@ -16,6 +16,13 @@ export interface TreeSpecies {
   unlockAt: number;
   trunk: string;
   foliage: [string, string];
+  /** When set, this species always earns exactly this many leaves/sec —
+   *  age, water, fertilize, and boost are all ignored for it entirely.
+   *  Pairs naturally with a custom maxBoostLevel: the level number can
+   *  still climb for bragging rights without touching the payout. */
+  flatIncome?: number;
+  /** Per-species override of the shared boost level cap (MAX_BOOST_LEVEL). */
+  maxBoostLevel?: number;
 }
 
 export interface PlantedTree {

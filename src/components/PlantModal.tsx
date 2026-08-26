@@ -51,7 +51,11 @@ export function PlantModal({ leaves, totalEarned, trees, inventory, onPick, onCl
                     </span>
                   </div>
                   <p className="species-desc">{species.description}</p>
-                  <span className="species-income">база {formatLeaves(species.baseIncome)}/с, растёт с возрастом</span>
+                  <span className="species-income">
+                    {species.flatIncome !== undefined
+                      ? `фиксированно ${formatLeaves(species.flatIncome)}/с`
+                      : `база ${formatLeaves(species.baseIncome)}/с, растёт с возрастом`}
+                  </span>
                   {free > 0 && <span className="species-free-label">Бесплатных из кейсов: {free}</span>}
                   {locked && <span className="species-locked-label">Откроется при {formatLeaves(species.unlockAt)} 🍃 заработано за игру</span>}
                 </div>

@@ -593,7 +593,7 @@ export function useGarden() {
         return { levels: totalLevels, cost: totalCost };
       }
 
-      const grantedLevels = entries.map((e) => levelsWithinCap(e.level, quantity));
+      const grantedLevels = entries.map((e) => levelsWithinCap(e.species, e.level, quantity));
       const costs = entries.map((e, idx) => costForLevels(e.species, e.level, grantedLevels[idx]));
       const total = costs.reduce((a, b) => a + b, 0);
       const totalLevels = grantedLevels.reduce((a, b) => a + b, 0);
@@ -624,7 +624,7 @@ export function useGarden() {
       return { cost: totalCost, levels: levels.reduce((a, b) => a + b, 0) };
     }
     const cost = entries.reduce((sum, e) => sum + costForLevels(e.species, e.level, quantity), 0);
-    const levels = entries.reduce((sum, e) => sum + levelsWithinCap(e.level, quantity), 0);
+    const levels = entries.reduce((sum, e) => sum + levelsWithinCap(e.species, e.level, quantity), 0);
     return { cost, levels };
   }, []);
 

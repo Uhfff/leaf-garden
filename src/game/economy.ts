@@ -16,6 +16,7 @@ const AGE_UNIT_SECONDS = 24 * 60 * 60;
  *  there's still no single "best" tree that caps out, just diminishing
  *  returns per additional day alive. */
 export function incomeRate(species: TreeSpecies, ageSeconds: number, multiplier = 1): number {
+  if (species.flatIncome !== undefined) return species.flatIncome;
   const age = Math.max(ageSeconds, 0);
   return species.baseIncome * multiplier * (1 + species.growthRate * Math.sqrt(age / AGE_UNIT_SECONDS));
 }
@@ -28,6 +29,7 @@ export function incomeRate(species: TreeSpecies, ageSeconds: number, multiplier 
 export function earningsBetween(species: TreeSpecies, ageStart: number, ageEnd: number, multiplier = 1): number {
   const a = Math.max(ageStart, 0);
   const b = Math.max(ageEnd, a);
+  if (species.flatIncome !== undefined) return species.flatIncome * (b - a);
   const linear = species.baseIncome * (b - a);
   const k = (species.baseIncome * species.growthRate) / Math.sqrt(AGE_UNIT_SECONDS);
   const curved = k * (2 / 3) * (Math.pow(b, 1.5) - Math.pow(a, 1.5));
@@ -103,17 +105,20 @@ export function upgradeCost(type: UpgradeType, species: TreeSpecies, boostLevel:
 export const MAX_BOOST_LEVEL = 50;
 
 /** Total cost of buying up to `count` consecutive boost levels starting from
- *  `fromLevel`, capped so the tree never exceeds MAX_BOOST_LEVEL. */
+ *  `fromLevel`, capped so the tree never exceeds its (species-specific, or
+ *  the shared default) max boost level. */
 export function costForLevels(species: TreeSpecies, fromLevel: number, count: number): number {
-  const capped = Math.max(0, Math.min(count, MAX_BOOST_LEVEL - fromLevel));
+  const cap = species.maxBoostLevel ?? MAX_BOOST_LEVEL;
+  const capped = Math.max(0, Math.min(count, cap - fromLevel));
   let total = 0;
   for (let k = 0; k < capped; k++) total += upgradeCost('boost', species, fromLevel + k);
   return total;
 }
 
 /** How many of the requested levels can actually be bought before hitting the cap. */
-export function levelsWithinCap(fromLevel: number, requested: number): number {
-  return Math.max(0, Math.min(requested, MAX_BOOST_LEVEL - fromLevel));
+export function levelsWithinCap(species: TreeSpecies, fromLevel: number, requested: number): number {
+  const cap = species.maxBoostLevel ?? MAX_BOOST_LEVEL;
+  return Math.max(0, Math.min(requested, cap - fromLevel));
 }
 
 export type BoostQuantity = 1 | 10 | 100 | 'max';
@@ -135,7 +140,8 @@ export function maxBoostAllocation(
     let bestIndex = -1;
     let bestCost = Infinity;
     for (let i = 0; i < entries.length; i++) {
-      if (entries[i].level + levels[i] >= MAX_BOOST_LEVEL) continue;
+      const cap = entries[i].species.maxBoostLevel ?? MAX_BOOST_LEVEL;
+      if (entries[i].level + levels[i] >= cap) continue;
       const cost = upgradeCost('boost', entries[i].species, entries[i].level + levels[i]);
       if (cost < bestCost) {
         bestCost = cost;

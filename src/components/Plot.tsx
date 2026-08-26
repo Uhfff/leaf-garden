@@ -49,7 +49,7 @@ const PlotImpl = forwardRef<HTMLButtonElement, Props>(function PlotImpl(
     });
   }
   if (tree.boostLevel > 0) {
-    const maxed = tree.boostLevel >= MAX_BOOST_LEVEL;
+    const maxed = tree.boostLevel >= (species.maxBoostLevel ?? MAX_BOOST_LEVEL);
     badges.push({ key: 'boost', label: `${UPGRADES.boost.icon}${tree.boostLevel}${maxed ? ' MAX' : ''}` });
   }
 
