@@ -79,6 +79,18 @@ export const SEASONAL_SPECIES: TreeSpecies[] = [
     foliage: ['#ff6b35', '#ffb703'],
   },
   {
+    id: 'koch_brat',
+    name: 'Коч Брат',
+    description: 'Трофей за отдельный промокод, не из кейса — просто свой в доску.',
+    cost: 60_000_000,
+    sellPrice: 700_000_000,
+    baseIncome: 16_000,
+    growthRate: 3.2,
+    unlockAt: Infinity,
+    trunk: '#2a2f3a',
+    foliage: ['#3b4a63', '#6b87ad'],
+  },
+  {
     id: 'six_seven',
     name: '67',
     description: 'Никто толком не знает, что это значит, но оно существует — самый редкий и нелепый трофей кейса.',

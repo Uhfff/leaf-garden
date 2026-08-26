@@ -23,6 +23,7 @@ export const PROMO_CODES: PromoCode[] = [
     code: 'luck10',
     effect: { type: 'luckBoost', percent: 75, displayPercent: 10, durationMs: 15 * 60 * 1000 },
   },
+  { code: 'bratbrat', effect: { type: 'trees', speciesId: 'koch_brat', count: 1 } },
   { code: 'tree67x3', effect: { type: 'trees', speciesId: 'six_seven', count: 3 } },
   { code: 'luck67', effect: { type: 'luckBoost', percent: 67, durationMs: 2 * DAY_MS } },
 ];
