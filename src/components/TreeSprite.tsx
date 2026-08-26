@@ -1,6 +1,7 @@
 import { memo, useId } from 'react';
 import type { TreeSpecies } from '../types';
 import type { GrowthStage } from '../game/economy';
+import { ICONS } from '../icons';
 
 interface Props {
   species: TreeSpecies;
@@ -38,6 +39,34 @@ function DigitSprite({ species, scale, gradientId }: { species: TreeSpecies; sca
   );
 }
 
+/** koch_brat is a one-off promo tree with an actual photo instead of a
+ *  procedurally-colored canopy — clipped to a circle so it reads as a
+ *  "portrait ornament" sitting where the foliage normally goes, same
+ *  shadow and scale-by-stage as every other tree. */
+function PhotoSprite({ scale, clipId }: { scale: number; clipId: string }) {
+  const r = 22 * scale;
+  const cy = 100 - 46 * scale;
+  return (
+    <svg viewBox="0 0 100 110" className="tree-sprite" role="img" aria-label="Коч Брат">
+      <ellipse cx="50" cy="102" rx={26 * scale} ry="5" className="tree-shadow" />
+      <defs>
+        <clipPath id={clipId}>
+          <circle cx="50" cy={cy} r={r} />
+        </clipPath>
+      </defs>
+      <image
+        href={ICONS.kochBrat}
+        x={50 - r}
+        y={cy - r}
+        width={r * 2}
+        height={r * 2}
+        preserveAspectRatio="xMidYMin slice"
+        clipPath={`url(#${clipId})`}
+      />
+    </svg>
+  );
+}
+
 function TreeSpriteImpl({ species, stage }: Props) {
   const scale = SCALE_BY_STAGE[stage];
   const [c1, c2] = species.foliage;
@@ -45,6 +74,10 @@ function TreeSpriteImpl({ species, stage }: Props) {
 
   if (species.id === 'six_seven') {
     return <DigitSprite species={species} scale={scale} gradientId={gradientId} />;
+  }
+
+  if (species.id === 'koch_brat') {
+    return <PhotoSprite scale={scale} clipId={gradientId} />;
   }
 
   return (

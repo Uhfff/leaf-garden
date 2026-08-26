@@ -14,4 +14,5 @@ export const ICONS = {
   boost: iconUrl('levelup.png'),
   promo: iconUrl('promo.png'),
   invite: iconUrl('referral.png'),
+  kochBrat: iconUrl('koch-brat.png'),
 };
